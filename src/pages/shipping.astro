@@ -11,73 +11,103 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
     <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
 
     <style>
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      html, body {
+        width: 100%;
+        overflow-x: hidden;
+        -webkit-text-size-adjust: 100%;
+      }
+
       body {
-        font-family: system-ui, -apple-system, sans-serif;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
         margin: 0;
         background: #f9fafb;
-        color: #111827;
+        color: #333;
+        line-height: 1.6;
       }
 
       main {
+        width: 100%;
         max-width: 720px;
         margin: 2rem auto;
         padding: 1rem;
-        background: white;
+        background: #fff;
         border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        overflow-x: hidden;
       }
 
       h1 {
-        font-size: 1.3rem;
         text-align: center;
+        color: #111827;
       }
 
-      h3 {
-        margin-top: 1.5rem;
+      h2, h3 {
+        color: #111827;
+        margin-top: 1.5em;
+      }
+
+      p.lead {
+        text-align: center;
+        color: #6b7280;
       }
 
       form {
         display: flex;
         flex-direction: column;
-        gap: 1rem;
-      }
-
-      input, textarea {
+        gap: 1.2rem;
         width: 100%;
-        padding: 0.8rem;
-        border: 1px solid #d1d5db;
-        border-radius: 8px;
-        font-size: 16px;
-      }
-
-      textarea {
-        min-height: 90px;
+        max-width: 100%;
+        padding-bottom: 2rem;
       }
 
       label {
         font-weight: 600;
+        color: #374151;
+      }
+
+      input,
+      select,
+      textarea {
+        padding: 0.8em 1em;
+        border: 1.5px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 16px;
+        width: 100%;
+      }
+
+      textarea {
+        min-height: 100px;
       }
 
       button {
-        width: 100%;
-        padding: 0.9rem;
+        width: 180px;
+        align-self: center;
+        padding: 0.75em 1.2em;
+        border: none;
         background: #2563eb;
         color: white;
-        border: none;
-        border-radius: 8px;
         font-weight: 700;
+        border-radius: 10px;
+        cursor: pointer;
       }
 
-      /* SIMPLE CARD STYLE (NO FLEX TRICKS) */
-      .option {
-        display: block;
-        padding: 0.75rem;
-        border: 1px solid #d1d5db;
-        border-radius: 8px;
-        margin-bottom: 0.5rem;
+      button:hover {
+        background: #1e40af;
       }
 
-      .option input {
-        margin-right: 0.5rem;
+      @media (max-width: 480px) {
+        main {
+          margin: 1rem 0.75rem;
+          padding: 1rem;
+        }
+
+        button {
+          width: 100%;
+        }
       }
     </style>
   </head>
@@ -88,81 +118,90 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
     <main>
       <h1>Shipping Information Form</h1>
 
+      <h2>🚛 Freight Connection Request</h2>
+
+      <p class="lead">
+        Bflopp helps connect shippers with qualified freight brokers based on shipping patterns and operational needs.
+      </p>
+
+      <p class="lead">
+        Submit your details and we’ll identify potential carrier or brokerage matches if applicable.
+      </p>
+
+      <!-- FORM -->
       <form id="shipping-form">
 
         <input type="hidden" name="lead_source" value="Website - Shipping Page" />
+        <input type="hidden" name="lead_type" value="broker_match_request" />
 
-        <h3>Company Size</h3>
+        <h3>Company Information</h3>
 
-        <label class="option">
-          <input type="radio" name="company_size" value="1–50 employees" required />
-          1–50 employees
+        <label>Company Name</label>
+        <input type="text" name="company" required />
+
+        <label>Contact Name</label>
+        <input type="text" name="contact" required />
+
+        <label>Email</label>
+        <input type="email" name="email" required />
+
+        <label>Industry</label>
+        <input type="text" name="industry" />
+
+        <label>Company Size</label>
+        <select name="company_size">
+          <option>1–50 employees</option>
+          <option>50–200 employees</option>
+          <option>200–500 employees</option>
+          <option>500+ employees</option>
+        </select>
+
+        <h3>Shipping Overview</h3>
+
+        <label>Typical Shipment Frequency</label>
+        <select name="shipment_frequency" required>
+          <option>1–5 shipments per month</option>
+          <option>6–20 shipments per month</option>
+          <option>20–100 shipments per month</option>
+          <option>100+ shipments per month</option>
+        </select>
+
+        <label>Primary Shipment Type</label>
+        <select name="shipment_type">
+          <option>Full Truckload (FTL)</option>
+          <option>Less-than-Truckload (LTL)</option>
+          <option>Mixed</option>
+        </select>
+
+        <label>Equipment Needs</label>
+        <select name="equipment">
+          <option>Dry Van</option>
+          <option>Reefer</option>
+          <option>Flatbed</option>
+          <option>Specialized / Other</option>
+        </select>
+
+        <label>Main Shipping Routes</label>
+        <textarea name="lanes" placeholder="Example: Portland → Dallas, Seattle → LA"></textarea>
+
+        <h3>Logistics Notes</h3>
+
+        <label>Anything else we should know?</label>
+        <textarea name="challenge"></textarea>
+
+        <label>
+          <input type="checkbox" name="audit_interest" required />
+          Yes, I would like assistance with freight matching
         </label>
-
-        <label class="option">
-          <input type="radio" name="company_size" value="50–200 employees" />
-          50–200 employees
-        </label>
-
-        <label class="option">
-          <input type="radio" name="company_size" value="200–500 employees" />
-          200–500 employees
-        </label>
-
-        <label class="option">
-          <input type="radio" name="company_size" value="500+ employees" />
-          500+ employees
-        </label>
-
-        <h3>Urgency</h3>
-
-        <label class="option">
-          <input type="radio" name="urgency" value="Immediate (0–7 days)" required />
-          Immediate (0–7 days)
-        </label>
-
-        <label class="option">
-          <input type="radio" name="urgency" value="Short-term (1–4 weeks)" />
-          Short-term (1–4 weeks)
-        </label>
-
-        <label class="option">
-          <input type="radio" name="urgency" value="Ongoing / Planning" />
-          Ongoing / Planning
-        </label>
-
-        <h3>Equipment</h3>
-
-        <label class="option">
-          <input type="checkbox" name="equipment" value="Dry Van" />
-          Dry Van
-        </label>
-
-        <label class="option">
-          <input type="checkbox" name="equipment" value="Reefer" />
-          Reefer
-        </label>
-
-        <label class="option">
-          <input type="checkbox" name="equipment" value="Flatbed" />
-          Flatbed
-        </label>
-
-        <label class="option">
-          <input type="checkbox" name="equipment" value="Specialized / Other" />
-          Specialized / Other
-        </label>
-
-        <h3>Notes</h3>
-        <textarea name="notes"></textarea>
 
         <button type="submit">Request Review</button>
       </form>
 
+      <!-- FORM HANDLER + REDIRECT -->
       <script>
         const form = document.getElementById("shipping-form");
 
-        form.addEventListener("submit", async (e) => {
+        form.addEventListener("submit", async function (e) {
           e.preventDefault();
 
           const formData = new FormData(form);
@@ -171,13 +210,18 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
             await fetch("https://formspree.io/f/maqvnaja", {
               method: "POST",
               body: formData,
-              headers: { Accept: "application/json" }
+              headers: {
+                Accept: "application/json"
+              }
             });
-          } catch (err) {}
+          } catch (err) {
+            // ignore errors
+          }
 
           window.location.href = "https://bflopp.com/thank-you";
         });
       </script>
+
     </main>
 
     <Footer />
