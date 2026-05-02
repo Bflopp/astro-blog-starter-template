@@ -73,4 +73,113 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         padding: 0.75rem;
         border: 1px solid #d1d5db;
         border-radius: 8px;
-        margin-bottom
+        margin-bottom: 0.5rem;
+      }
+
+      .option input {
+        margin-right: 0.5rem;
+      }
+    </style>
+  </head>
+
+  <body>
+    <Header />
+
+    <main>
+      <h1>Shipping Information Form</h1>
+
+      <form id="shipping-form">
+
+        <input type="hidden" name="lead_source" value="Website - Shipping Page" />
+
+        <h3>Company Size</h3>
+
+        <label class="option">
+          <input type="radio" name="company_size" value="1–50 employees" required />
+          1–50 employees
+        </label>
+
+        <label class="option">
+          <input type="radio" name="company_size" value="50–200 employees" />
+          50–200 employees
+        </label>
+
+        <label class="option">
+          <input type="radio" name="company_size" value="200–500 employees" />
+          200–500 employees
+        </label>
+
+        <label class="option">
+          <input type="radio" name="company_size" value="500+ employees" />
+          500+ employees
+        </label>
+
+        <h3>Urgency</h3>
+
+        <label class="option">
+          <input type="radio" name="urgency" value="Immediate (0–7 days)" required />
+          Immediate (0–7 days)
+        </label>
+
+        <label class="option">
+          <input type="radio" name="urgency" value="Short-term (1–4 weeks)" />
+          Short-term (1–4 weeks)
+        </label>
+
+        <label class="option">
+          <input type="radio" name="urgency" value="Ongoing / Planning" />
+          Ongoing / Planning
+        </label>
+
+        <h3>Equipment</h3>
+
+        <label class="option">
+          <input type="checkbox" name="equipment" value="Dry Van" />
+          Dry Van
+        </label>
+
+        <label class="option">
+          <input type="checkbox" name="equipment" value="Reefer" />
+          Reefer
+        </label>
+
+        <label class="option">
+          <input type="checkbox" name="equipment" value="Flatbed" />
+          Flatbed
+        </label>
+
+        <label class="option">
+          <input type="checkbox" name="equipment" value="Specialized / Other" />
+          Specialized / Other
+        </label>
+
+        <h3>Notes</h3>
+        <textarea name="notes"></textarea>
+
+        <button type="submit">Request Review</button>
+      </form>
+
+      <script>
+        const form = document.getElementById("shipping-form");
+
+        form.addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const formData = new FormData(form);
+
+          try {
+            await fetch("https://formspree.io/f/maqvnaja", {
+              method: "POST",
+              body: formData,
+              headers: { Accept: "application/json" }
+            });
+          } catch (err) {}
+
+          window.location.href = "https://bflopp.com/thank-you";
+        });
+      </script>
+    </main>
+
+    <Footer />
+  </body>
+</html>
