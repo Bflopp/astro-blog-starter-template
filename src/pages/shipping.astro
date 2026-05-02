@@ -1,305 +1,201 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
+---
+
 <!DOCTYPE html>
-
 <html lang="en">
-
   <head>
-
     <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
 
     <style>
-
       *, *::before, *::after {
-
         box-sizing: border-box;
-
       }
 
       body {
-
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-
         margin: 0;
-
         background: #f9fafb;
-
         color: #333;
-
         line-height: 1.6;
-
       }
 
       main {
-
         max-width: 720px;
-
         margin: 3em auto 4em;
-
         padding: 2em;
-
         background: #fff;
-
         border-radius: 12px;
-
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-
       }
 
       h1 {
-
-        font-weight: 700;
-
         text-align: center;
-
-        margin-bottom: 0.2em;
-
         color: #111827;
-
       }
 
       h2, h3 {
-
         color: #111827;
-
         margin-top: 1.5em;
-
-        margin-bottom: 0.5em;
-
-        font-weight: 600;
-
       }
 
       p.lead {
-
-        font-size: 1.1rem;
-
         text-align: center;
-
         color: #6b7280;
-
-        margin-bottom: 2em;
-
       }
 
       form {
-
         display: flex;
-
         flex-direction: column;
-
         gap: 1.2em;
-
       }
 
       label {
-
         font-weight: 600;
-
-        margin-bottom: 0.3em;
-
         color: #374151;
-
       }
 
-      input[type="text"],
-
-      input[type="email"],
-
-      select,
+      input, select, textarea {
+        padding: 0.8em 1em;
+        border: 1.5px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 1rem;
+        width: 100%;
+      }
 
       textarea {
-
-        padding: 0.8em 1em;
-
-        font-size: 1rem;
-
-        border: 1.5px solid #d1d5db;
-
-        border-radius: 8px;
-
-        width: 100%;
-
-        font-family: inherit;
-
-        resize: vertical;
-
+        min-height: 100px;
       }
-
-      textarea { min-height: 100px; }
 
       button {
-
-        width: 160px;
-
+        width: 180px;
         align-self: center;
-
         padding: 0.75em 1.2em;
-
         border: none;
-
-        background-color: #2563eb;
-
+        background: #2563eb;
         color: white;
-
         font-weight: 700;
-
         border-radius: 10px;
-
         cursor: pointer;
-
       }
 
+      button:hover {
+        background: #1e40af;
+      }
     </style>
-
   </head>
 
   <body>
-
     <Header />
 
     <main>
-
       <h1>Shipping Information Form</h1>
 
       <h2>🧑‍🚀 Free Freight Cost Review</h2>
 
       <p class="lead">
-
         Most shippers overpay 8–22% on full truckload freight.<br />
-
-        Submit your information for a no-obligation cost review.
-
+        Submit your information for a no-obligation review.
       </p>
 
       <p class="lead">
-
-        Lets try and connect you <br />
-
-        with people that can help
-
+        We’ll connect you with potential solutions if savings opportunities exist.
       </p>
 
-      <!-- ✅ FIX: added ID HERE -->
-
-      <form id="shipping-form" action="https://formspree.io/f/maqvnaja" method="POST">
+      <!-- ✅ FORM (NO action/method — handled by JS) -->
+      <form id="shipping-form">
 
         <input type="hidden" name="lead_source" value="Website - Shipping Page" />
-
-        <input type="hidden" name="_subject" value="New Freight Lead - Bflopp" />
 
         <h3>Company Information</h3>
 
         <label>Company Name</label>
-
         <input type="text" name="company" required />
 
         <label>Contact Name</label>
-
         <input type="text" name="contact" required />
 
         <label>Email</label>
-
         <input type="email" name="email" required />
 
         <label>Industry</label>
-
         <input type="text" name="industry" />
 
         <label>Company Size</label>
-
         <select name="company_size">
-
           <option>1-50 employees</option>
-
           <option>50-200 employees</option>
-
           <option>200-500 employees</option>
-
           <option>500+</option>
-
         </select>
 
         <h3>Freight Profile</h3>
 
         <label>Monthly Freight Spend</label>
-
         <select name="monthly_spend" required>
-
           <option>$0–$10k</option>
-
           <option>$10k–$50k</option>
-
           <option>$50k–$250k</option>
-
           <option>$250k+</option>
-
         </select>
 
         <label>Loads Per Month</label>
-
         <input type="text" name="loads_per_month" />
 
         <label>Equipment Type</label>
-
         <select name="equipment">
-
           <option>Dry Van</option>
-
           <option>Reefer</option>
-
           <option>Flatbed</option>
-
           <option>Mixed</option>
-
         </select>
 
         <label>Main Shipping Lanes</label>
-
         <textarea name="lanes"></textarea>
 
         <h3>Cost Optimization</h3>
 
         <label>Biggest Shipping Challenge</label>
-
         <textarea name="challenge"></textarea>
 
         <label>
-
           <input type="checkbox" name="audit_interest" required />
-
-          Yes, I would like a free freight cost analysis.
-
+          Yes, I want a freight cost review
         </label>
 
         <button type="submit">Request Review</button>
-
       </form>
 
-      <!-- ✅ FIXED REDIRECT SCRIPT -->
-
+      <!-- ✅ FINAL WORKING REDIRECT LOGIC -->
       <script>
-
         const form = document.getElementById("shipping-form");
 
-        if (form) {
+        form.addEventListener("submit", async function (e) {
+          e.preventDefault();
 
-          form.addEventListener("submit", function () {
+          const formData = new FormData(form);
 
-            setTimeout(() => {
+          try {
+            await fetch("https://formspree.io/f/maqvnaja", {
+              method: "POST",
+              body: formData,
+              headers: {
+                Accept: "application/json"
+              }
+            });
+          } catch (err) {
+            // ignore errors — still redirect
+          }
 
-              window.location.href = "https://bflopp.com/thank-you";
-
-            }, 1000);
-
-          });
-
-        }
-
+          window.location.href = "https://bflopp.com/thank-you";
+        });
       </script>
 
     </main>
 
     <Footer />
-
   </body>
-
 </html>
