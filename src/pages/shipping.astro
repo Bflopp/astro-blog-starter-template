@@ -39,12 +39,10 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
       }
 
-      /* 🔥 FIX: smaller, tighter H1 for mobile */
       h1 {
         text-align: center;
         color: #111827;
         font-size: 1.4rem;
-        line-height: 1.3;
         margin-bottom: 0.75rem;
       }
 
@@ -70,7 +68,6 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
       }
 
       input,
-      select,
       textarea {
         padding: 0.8em 1em;
         border: 1.5px solid #d1d5db;
@@ -100,7 +97,7 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
       }
 
       /* =========================
-         TAP CARD SYSTEM (FIXED)
+         TAP CARD SYSTEM
       ========================== */
 
       .card-group {
@@ -118,10 +115,7 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         gap: 0.75rem;
         background: #fff;
         transition: all 0.2s ease;
-
-        /* 🔑 FIX overflow */
         width: 100%;
-        overflow: hidden;
       }
 
       .card-option:hover {
@@ -136,12 +130,8 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
       }
 
       .card-option span {
-        display: block;
-
-        /* 🔑 CRITICAL FIX: text wrapping */
         white-space: normal;
         word-break: break-word;
-        overflow-wrap: anywhere;
         line-height: 1.3;
       }
 
@@ -159,10 +149,6 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         button {
           width: 100%;
         }
-
-        h1 {
-          font-size: 1.25rem;
-        }
       }
     </style>
   </head>
@@ -176,7 +162,7 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
       <h2>🚛 Freight Connection Request</h2>
 
       <p class="lead">
-        Bflopp connects shippers with qualified freight brokers based on operational needs and shipping patterns.
+        Bflopp connects shippers with qualified freight brokers based on operational patterns and routing needs.
       </p>
 
       <form id="shipping-form">
@@ -184,6 +170,7 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         <input type="hidden" name="lead_source" value="Website - Shipping Page" />
         <input type="hidden" name="lead_type" value="broker_match_request" />
 
+        <!-- COMPANY INFO -->
         <h3>Company Information</h3>
 
         <label>Company Name</label>
@@ -198,29 +185,60 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         <label>Industry</label>
         <input type="text" name="industry" />
 
-        <label>Company Size</label>
-        <select name="company_size">
-          <option>1–50 employees</option>
-          <option>50–200 employees</option>
-          <option>200–500 employees</option>
-          <option>500+ employees</option>
-        </select>
+        <!-- COMPANY SIZE -->
+        <h3>Company Size</h3>
 
-        <h3>Shipping Overview</h3>
+        <div class="card-group">
+          <label class="card-option">
+            <input type="radio" name="company_size" value="1–50 employees" required />
+            <span>1–50 employees</span>
+          </label>
 
-        <label>Typical Shipment Frequency</label>
-        <select name="shipment_frequency" required>
-          <option>1–5 shipments per month</option>
-          <option>6–20 shipments per month</option>
-          <option>20–100 shipments per month</option>
-          <option>100+ shipments per month</option>
-        </select>
+          <label class="card-option">
+            <input type="radio" name="company_size" value="50–200 employees" />
+            <span>50–200 employees</span>
+          </label>
 
+          <label class="card-option">
+            <input type="radio" name="company_size" value="200–500 employees" />
+            <span>200–500 employees</span>
+          </label>
+
+          <label class="card-option">
+            <input type="radio" name="company_size" value="500+ employees" />
+            <span>500+ employees</span>
+          </label>
+        </div>
+
+        <!-- FREQUENCY -->
+        <h3>Shipment Frequency</h3>
+
+        <div class="card-group">
+          <label class="card-option">
+            <input type="radio" name="shipment_frequency" value="1–5/month" required />
+            <span>1–5 shipments per month</span>
+          </label>
+
+          <label class="card-option">
+            <input type="radio" name="shipment_frequency" value="6–20/month" />
+            <span>6–20 shipments per month</span>
+          </label>
+
+          <label class="card-option">
+            <input type="radio" name="shipment_frequency" value="20–100/month" />
+            <span>20–100 shipments per month</span>
+          </label>
+
+          <label class="card-option">
+            <input type="radio" name="shipment_frequency" value="100+/month" />
+            <span>100+ shipments per month</span>
+          </label>
+        </div>
+
+        <!-- URGENCY -->
         <h3>Shipping Urgency</h3>
 
-        <label>How soon do you need support?</label>
         <div class="card-group">
-
           <label class="card-option">
             <input type="radio" name="urgency" value="Immediate (0–7 days)" required />
             <span>⚡ Immediate (0–7 days)</span>
@@ -235,21 +253,32 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
             <input type="radio" name="urgency" value="Ongoing / Planning" />
             <span>📅 Ongoing / Planning</span>
           </label>
-
         </div>
 
-        <label>Primary Shipment Type</label>
-        <select name="shipment_type">
-          <option>Full Truckload (FTL)</option>
-          <option>Less-than-Truckload (LTL)</option>
-          <option>Mixed</option>
-        </select>
+        <!-- SHIPMENT TYPE -->
+        <h3>Shipment Type</h3>
 
+        <div class="card-group">
+          <label class="card-option">
+            <input type="radio" name="shipment_type" value="FTL" required />
+            <span>Full Truckload (FTL)</span>
+          </label>
+
+          <label class="card-option">
+            <input type="radio" name="shipment_type" value="LTL" />
+            <span>Less-than-Truckload (LTL)</span>
+          </label>
+
+          <label class="card-option">
+            <input type="radio" name="shipment_type" value="Mixed" />
+            <span>Mixed</span>
+          </label>
+        </div>
+
+        <!-- EQUIPMENT -->
         <h3>Equipment Needs</h3>
 
-        <label>Select all that apply</label>
         <div class="card-group">
-
           <label class="card-option">
             <input type="checkbox" name="equipment" value="Dry Van" />
             <span>Dry Van</span>
@@ -269,15 +298,13 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
             <input type="checkbox" name="equipment" value="Specialized / Other" />
             <span>Specialized / Other</span>
           </label>
-
         </div>
 
-        <label>Main Shipping Routes</label>
+        <!-- ROUTES -->
+        <h3>Main Shipping Routes</h3>
         <textarea name="lanes"></textarea>
 
-        <h3>Logistics Notes</h3>
-
-        <label>Anything else we should know?</label>
+        <h3>Notes</h3>
         <textarea name="challenge"></textarea>
 
         <label>
