@@ -51,6 +51,8 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         display: flex;
         flex-direction: column;
         gap: 1.2em;
+        max-width: 100%;
+        padding-bottom: 2rem;
       }
 
       label {
@@ -58,11 +60,13 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         color: #374151;
       }
 
-      input, select, textarea {
+      input,
+      select,
+      textarea {
         padding: 0.8em 1em;
         border: 1.5px solid #d1d5db;
         border-radius: 8px;
-        font-size: 1rem;
+        font-size: 16px; /* IMPORTANT: prevents iPhone zoom */
         width: 100%;
       }
 
@@ -85,6 +89,25 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
       button:hover {
         background: #1e40af;
       }
+
+      /* =========================
+         MOBILE FIXES (THIS PAGE ONLY)
+      ========================== */
+
+      @media (max-width: 480px) {
+        main {
+          margin: 1rem 0.75rem;
+          padding: 1rem;
+        }
+
+        button {
+          width: 100%;
+        }
+      }
+
+      html, body {
+        overflow-x: hidden;
+      }
     </style>
   </head>
 
@@ -102,10 +125,9 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
       </p>
 
       <p class="lead">
-        We’ll connect you with potential solutions if savings opportunities exist.
+        We’ll connect you with potential savings opportunities if applicable.
       </p>
 
-      <!-- ✅ FORM (NO action/method — handled by JS) -->
       <form id="shipping-form">
 
         <input type="hidden" name="lead_source" value="Website - Shipping Page" />
@@ -163,13 +185,13 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 
         <label>
           <input type="checkbox" name="audit_interest" required />
-          Yes, I want a freight cost review
+          Yes, I would like a freight cost review
         </label>
 
         <button type="submit">Request Review</button>
       </form>
 
-      <!-- ✅ FINAL WORKING REDIRECT LOGIC -->
+      <!-- FORM SUBMIT + RELIABLE REDIRECT -->
       <script>
         const form = document.getElementById("shipping-form");
 
@@ -187,7 +209,7 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
               }
             });
           } catch (err) {
-            // ignore errors — still redirect
+            // ignore errors
           }
 
           window.location.href = "https://bflopp.com/thank-you";
