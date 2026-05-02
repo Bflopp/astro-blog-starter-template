@@ -37,7 +37,6 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         background: #fff;
         border-radius: 12px;
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-        overflow-x: hidden;
       }
 
       h1 {
@@ -59,9 +58,6 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         display: flex;
         flex-direction: column;
         gap: 1.2rem;
-        width: 100%;
-        max-width: 100%;
-        padding-bottom: 2rem;
       }
 
       label {
@@ -99,6 +95,50 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         background: #1e40af;
       }
 
+      /* =========================
+         CHECKBOX GROUP (EQUIPMENT)
+      ========================== */
+
+      .checkbox-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+        padding: 0.5rem 0;
+      }
+
+      .checkbox-group label {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-weight: 500;
+      }
+
+      .checkbox-group input {
+        transform: scale(1.2);
+      }
+
+      /* =========================
+         URGENCY BUTTON GROUP
+      ========================== */
+
+      .radio-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+        padding: 0.5rem 0;
+      }
+
+      .radio-group label {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-weight: 500;
+      }
+
+      .radio-group input {
+        transform: scale(1.2);
+      }
+
       @media (max-width: 480px) {
         main {
           margin: 1rem 0.75rem;
@@ -116,19 +156,14 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
     <Header />
 
     <main>
-      <h2>🚚 Shipping Information Form</h2>
+      <h1>Shipping Information Form</h1>
 
       <h2>🚛 Freight Connection Request</h2>
 
       <p class="lead">
-        Bflopp helps connect shippers with qualified freight brokers based on shipping patterns and operational needs.
+        Bflopp connects shippers with qualified freight brokers based on operational needs and shipping patterns.
       </p>
 
-      <p class="lead">
-        Submit your details and we’ll identify potential carrier or brokerage matches if applicable.
-      </p>
-
-      <!-- FORM -->
       <form id="shipping-form">
 
         <input type="hidden" name="lead_source" value="Website - Shipping Page" />
@@ -166,6 +201,27 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
           <option>100+ shipments per month</option>
         </select>
 
+        <!-- URGENCY SELECTOR -->
+        <h3>Shipping Urgency</h3>
+
+        <label>How soon do you need shipping support?</label>
+        <div class="radio-group">
+          <label>
+            <input type="radio" name="urgency" value="Immediate (0–7 days)" required />
+            Immediate (0–7 days)
+          </label>
+
+          <label>
+            <input type="radio" name="urgency" value="Short-term (1–4 weeks)" />
+            Short-term (1–4 weeks)
+          </label>
+
+          <label>
+            <input type="radio" name="urgency" value="Ongoing / Planning" />
+            Ongoing / Planning
+          </label>
+        </div>
+
         <label>Primary Shipment Type</label>
         <select name="shipment_type">
           <option>Full Truckload (FTL)</option>
@@ -173,13 +229,31 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
           <option>Mixed</option>
         </select>
 
-        <label>Equipment Needs</label>
-        <select name="equipment">
-          <option>Dry Van</option>
-          <option>Reefer</option>
-          <option>Flatbed</option>
-          <option>Specialized / Other</option>
-        </select>
+        <!-- EQUIPMENT MULTI-SELECT -->
+        <h3>Equipment Needs</h3>
+
+        <label>Select all that apply</label>
+        <div class="checkbox-group">
+          <label>
+            <input type="checkbox" name="equipment" value="Dry Van" />
+            Dry Van
+          </label>
+
+          <label>
+            <input type="checkbox" name="equipment" value="Reefer" />
+            Reefer
+          </label>
+
+          <label>
+            <input type="checkbox" name="equipment" value="Flatbed" />
+            Flatbed
+          </label>
+
+          <label>
+            <input type="checkbox" name="equipment" value="Specialized / Other" />
+            Specialized / Other
+          </label>
+        </div>
 
         <label>Main Shipping Routes</label>
         <textarea name="lanes" placeholder="Example: Portland → Dallas, Seattle → LA"></textarea>
@@ -197,7 +271,6 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         <button type="submit">Request Review</button>
       </form>
 
-      <!-- FORM HANDLER + REDIRECT -->
       <script>
         const form = document.getElementById("shipping-form");
 
@@ -214,9 +287,7 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
                 Accept: "application/json"
               }
             });
-          } catch (err) {
-            // ignore errors
-          }
+          } catch (err) {}
 
           window.location.href = "https://bflopp.com/thank-you";
         });
