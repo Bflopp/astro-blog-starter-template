@@ -15,15 +15,10 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         box-sizing: border-box;
       }
 
-      /* =========================
-         BASE MOBILE STABILITY FIX
-      ========================== */
-
       html, body {
         width: 100%;
         overflow-x: hidden;
         -webkit-text-size-adjust: 100%;
-        height: 100%;
       }
 
       body {
@@ -33,28 +28,6 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         color: #333;
         line-height: 1.6;
       }
-
-      /* Prevent Safari viewport jump issues */
-      body {
-        min-height: -webkit-fill-available;
-      }
-
-      /* =========================
-         HEADER SAFETY FIX
-      ========================== */
-
-      header {
-        max-width: 100%;
-        overflow-x: hidden;
-      }
-
-      header * {
-        min-width: 0;
-      }
-
-      /* =========================
-         MAIN LAYOUT
-      ========================== */
 
       main {
         width: 100%;
@@ -82,10 +55,6 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         color: #6b7280;
       }
 
-      /* =========================
-         FORM STABILITY
-      ========================== */
-
       form {
         display: flex;
         flex-direction: column;
@@ -106,9 +75,8 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         padding: 0.8em 1em;
         border: 1.5px solid #d1d5db;
         border-radius: 8px;
-        font-size: 16px; /* IMPORTANT: prevents iOS zoom */
+        font-size: 16px;
         width: 100%;
-        max-width: 100%;
       }
 
       textarea {
@@ -131,25 +99,6 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         background: #1e40af;
       }
 
-      /* =========================
-         iPHONE KEYBOARD FIX
-      ========================== */
-
-      @supports (-webkit-touch-callout: none) {
-        body {
-          min-height: -webkit-fill-available;
-        }
-
-        main {
-          /* prevents layout jump when keyboard opens */
-          transform: translateZ(0);
-        }
-      }
-
-      /* =========================
-         MOBILE OPTIMIZATION
-      ========================== */
-
       @media (max-width: 480px) {
         main {
           margin: 1rem 0.75rem;
@@ -167,23 +116,23 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
     <Header />
 
     <main>
-      <h2>🚚 Shipping Information Form</h2>
+      <h1>Shipping Information Form</h1>
 
-      <h2>🧑‍🚀 Free Freight Cost Review</h2>
+      <h2>🚛 Freight Connection Request</h2>
 
       <p class="lead">
-        Most shippers overpay 8–22% on full truckload freight.<br />
-        Submit your information for a no-obligation review.
+        Bflopp helps connect shippers with qualified freight brokers based on shipping patterns and operational needs.
       </p>
 
       <p class="lead">
-        We’ll connect you with potential savings opportunities if applicable.
+        Submit your details and we’ll identify potential carrier or brokerage matches if applicable.
       </p>
 
       <!-- FORM -->
       <form id="shipping-form">
 
         <input type="hidden" name="lead_source" value="Website - Shipping Page" />
+        <input type="hidden" name="lead_type" value="broker_match_request" />
 
         <h3>Company Information</h3>
 
@@ -201,50 +150,54 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 
         <label>Company Size</label>
         <select name="company_size">
-          <option>1-50 employees</option>
-          <option>50-200 employees</option>
-          <option>200-500 employees</option>
-          <option>500+</option>
+          <option>1–50 employees</option>
+          <option>50–200 employees</option>
+          <option>200–500 employees</option>
+          <option>500+ employees</option>
         </select>
 
-        <h3>Freight Profile</h3>
+        <h3>Shipping Overview</h3>
 
-        <label>Monthly Freight Spend</label>
-        <select name="monthly_spend" required>
-          <option>$0–$10k</option>
-          <option>$10k–$50k</option>
-          <option>$50k–$250k</option>
-          <option>$250k+</option>
+        <label>Typical Shipment Frequency</label>
+        <select name="shipment_frequency" required>
+          <option>1–5 shipments per month</option>
+          <option>6–20 shipments per month</option>
+          <option>20–100 shipments per month</option>
+          <option>100+ shipments per month</option>
         </select>
 
-        <label>Loads Per Month</label>
-        <input type="text" name="loads_per_month" />
+        <label>Primary Shipment Type</label>
+        <select name="shipment_type">
+          <option>Full Truckload (FTL)</option>
+          <option>Less-than-Truckload (LTL)</option>
+          <option>Mixed</option>
+        </select>
 
-        <label>Equipment Type</label>
+        <label>Equipment Needs</label>
         <select name="equipment">
           <option>Dry Van</option>
           <option>Reefer</option>
           <option>Flatbed</option>
-          <option>Mixed</option>
+          <option>Specialized / Other</option>
         </select>
 
-        <label>Main Shipping Lanes</label>
-        <textarea name="lanes"></textarea>
+        <label>Main Shipping Routes</label>
+        <textarea name="lanes" placeholder="Example: Portland → Dallas, Seattle → LA"></textarea>
 
-        <h3>Cost Optimization</h3>
+        <h3>Logistics Notes</h3>
 
-        <label>Biggest Shipping Challenge</label>
+        <label>Anything else we should know?</label>
         <textarea name="challenge"></textarea>
 
         <label>
           <input type="checkbox" name="audit_interest" required />
-          Yes, I would like a freight cost review
+          Yes, I would like assistance with freight matching
         </label>
 
         <button type="submit">Request Review</button>
       </form>
 
-      <!-- SUBMIT + RELIABLE REDIRECT -->
+      <!-- FORM HANDLER + REDIRECT -->
       <script>
         const form = document.getElementById("shipping-form");
 
@@ -262,7 +215,7 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
               }
             });
           } catch (err) {
-            // ignore errors but still redirect
+            // ignore errors
           }
 
           window.location.href = "https://bflopp.com/thank-you";
