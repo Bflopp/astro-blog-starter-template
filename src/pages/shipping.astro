@@ -1,224 +1,305 @@
----
-import BaseHead from '../components/BaseHead.astro';
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
-import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
----
-
 <!DOCTYPE html>
+
 <html lang="en">
+
   <head>
+
     <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+
     <style>
-      /* Reset and base */
+
       *, *::before, *::after {
+
         box-sizing: border-box;
+
       }
+
       body {
+
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+
         margin: 0;
+
         background: #f9fafb;
+
         color: #333;
+
         line-height: 1.6;
+
       }
+
       main {
+
         max-width: 720px;
+
         margin: 3em auto 4em;
+
         padding: 2em;
+
         background: #fff;
+
         border-radius: 12px;
+
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+
       }
+
       h1 {
+
         font-weight: 700;
+
         text-align: center;
+
         margin-bottom: 0.2em;
+
         color: #111827;
+
       }
+
       h2, h3 {
+
         color: #111827;
+
         margin-top: 1.5em;
+
         margin-bottom: 0.5em;
+
         font-weight: 600;
+
       }
+
       p.lead {
+
         font-size: 1.1rem;
+
         text-align: center;
+
         color: #6b7280;
+
         margin-bottom: 2em;
+
       }
+
       form {
+
         display: flex;
+
         flex-direction: column;
+
         gap: 1.2em;
+
       }
+
       label {
+
         font-weight: 600;
+
         margin-bottom: 0.3em;
+
         color: #374151;
+
       }
+
       input[type="text"],
+
       input[type="email"],
+
       select,
+
       textarea {
+
         padding: 0.8em 1em;
+
         font-size: 1rem;
+
         border: 1.5px solid #d1d5db;
+
         border-radius: 8px;
-        transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+
         width: 100%;
+
         font-family: inherit;
+
         resize: vertical;
+
       }
-      input[type="text"]:focus,
-      input[type="email"]:focus,
-      select:focus,
-      textarea:focus {
-        outline: none;
-        border-color: #2563eb;
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
-      }
-      textarea {
-        min-height: 100px;
-      }
-      input[type="checkbox"] {
-        margin-right: 0.6em;
-        transform: scale(1.2);
-        cursor: pointer;
-      }
-      label > input[type="checkbox"] {
-        vertical-align: middle;
-        margin-top: 0;
-      }
+
+      textarea { min-height: 100px; }
+
       button {
+
         width: 160px;
+
         align-self: center;
+
         padding: 0.75em 1.2em;
+
         border: none;
+
         background-color: #2563eb;
+
         color: white;
+
         font-weight: 700;
-        font-size: 1rem;
+
         border-radius: 10px;
+
         cursor: pointer;
-        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.6);
-        transition: background-color 0.3s ease, box-shadow 0.3s ease;
+
       }
-      button:hover,
-      button:focus {
-        background-color: #1e40af;
-        box-shadow: 0 6px 20px rgba(30, 64, 175, 0.8);
-      }
-      @media (max-width: 480px) {
-        main {
-          margin: 1.5em 1em 3em;
-          padding: 1.5em;
-        }
-        button {
-          width: 100%;
-        }
-      }
+
     </style>
+
   </head>
+
   <body>
+
     <Header />
+
     <main>
+
       <h1>Shipping Information Form</h1>
+
       <h2>🧑‍🚀 Free Freight Cost Review</h2>
+
       <p class="lead">
+
         Most shippers overpay 8–22% on full truckload freight.<br />
+
         Submit your information for a no-obligation cost review.
+
       </p>
+
       <p class="lead">
+
         Lets try and connect you <br />
+
         with people that can help
+
       </p>
-     <form action="https://formspree.io/f/maqvnaja" method="POST">
 
-  <!-- Lead tracking -->
-  <input type="hidden" name="lead_source" value="Website - Shipping Page" />
+      <!-- ✅ FIX: added ID HERE -->
 
-        <!-- Optional: email subject -->
+      <form id="shipping-form" action="https://formspree.io/f/maqvnaja" method="POST">
+
+        <input type="hidden" name="lead_source" value="Website - Shipping Page" />
+
         <input type="hidden" name="_subject" value="New Freight Lead - Bflopp" />
 
         <h3>Company Information</h3>
 
-        <label for="company">Company Name</label>
-        <input type="text" id="company" name="company" required />
+        <label>Company Name</label>
 
-        <label for="contact">Contact Name</label>
-        <input type="text" id="contact" name="contact" required />
+        <input type="text" name="company" required />
 
-        <label for="email">Email</label>
-        <input type="email" id="email" name="email" required />
+        <label>Contact Name</label>
 
-        <label for="industry">Industry</label>
-        <input
-          type="text"
-          id="industry"
-          name="industry"
-          placeholder="Manufacturing, Food, Retail, Construction..."
-        />
+        <input type="text" name="contact" required />
 
-        <label for="company_size">Company Size</label>
-        <select id="company_size" name="company_size">
+        <label>Email</label>
+
+        <input type="email" name="email" required />
+
+        <label>Industry</label>
+
+        <input type="text" name="industry" />
+
+        <label>Company Size</label>
+
+        <select name="company_size">
+
           <option>1-50 employees</option>
+
           <option>50-200 employees</option>
+
           <option>200-500 employees</option>
+
           <option>500+</option>
+
         </select>
 
         <h3>Freight Profile</h3>
 
-        <label for="monthly_spend">Monthly Freight Spend</label>
-        <select id="monthly_spend" name="monthly_spend" required>
+        <label>Monthly Freight Spend</label>
+
+        <select name="monthly_spend" required>
+
           <option>$0–$10k</option>
+
           <option>$10k–$50k</option>
+
           <option>$50k–$250k</option>
+
           <option>$250k+</option>
+
         </select>
 
-        <label for="loads_per_month">Approx Loads Per Month</label>
-        <input type="text" id="loads_per_month" name="loads_per_month" />
+        <label>Loads Per Month</label>
 
-        <label for="equipment">Equipment Type</label>
-        <select id="equipment" name="equipment">
+        <input type="text" name="loads_per_month" />
+
+        <label>Equipment Type</label>
+
+        <select name="equipment">
+
           <option>Dry Van</option>
+
           <option>Reefer</option>
+
           <option>Flatbed</option>
+
           <option>Mixed</option>
+
         </select>
 
-        <label for="lanes">Main Shipping Lanes</label>
-        <textarea
-          id="lanes"
-          name="lanes"
-          placeholder="Example: Portland OR → Dallas TX"
-        ></textarea>
+        <label>Main Shipping Lanes</label>
+
+        <textarea name="lanes"></textarea>
 
         <h3>Cost Optimization</h3>
 
-        <label for="challenge">Biggest Shipping Challenge</label>
-        <textarea id="challenge" name="challenge"></textarea>
+        <label>Biggest Shipping Challenge</label>
+
+        <textarea name="challenge"></textarea>
 
         <label>
+
           <input type="checkbox" name="audit_interest" required />
+
           Yes, I would like a free freight cost analysis.
+
         </label>
 
         <button type="submit">Request Review</button>
-      </form>
-<script>
-  const form = document.getElementById("shipping-form");
 
-  form.addEventListener("submit", function () {
-    // small delay to allow Formspree to receive submission
-    setTimeout(() => {
-      window.location.href = "https://bflopp.com/thank-you";
-    }, 600);
-  });
-</script>
+      </form>
+
+      <!-- ✅ FIXED REDIRECT SCRIPT -->
+
+      <script>
+
+        const form = document.getElementById("shipping-form");
+
+        if (form) {
+
+          form.addEventListener("submit", function () {
+
+            setTimeout(() => {
+
+              window.location.href = "https://bflopp.com/thank-you";
+
+            }, 600);
+
+          });
+
+        }
+
+      </script>
+
     </main>
+
     <Footer />
+
   </body>
+
 </html>
