@@ -130,11 +130,14 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         Submit your information for a no-obligation cost review.
       </p>
 
-      <form action="https://formspree.io/f/maqvnaja" method="POST">
-        <!-- Hidden Lead Tracking -->
-        <input type="hidden" name="lead_source" value="Website - Shipping Page" />
-        <!-- Correct Formspree redirect -->
-        <input type="hidden" name="_next" value="https://bflopp.com/thank-you" />
+     <form action="https://formspree.io/f/maqvnaja" method="POST">
+
+  <!-- Lead tracking -->
+  <input type="hidden" name="lead_source" value="Website - Shipping Page" />
+
+  <!-- Redirect after successful submission -->
+  <input type="hidden" name="_next" value="https://bflopp.com/thank-you" />
+
         <!-- Optional: email subject -->
         <input type="hidden" name="_subject" value="New Freight Lead - Bflopp" />
 
