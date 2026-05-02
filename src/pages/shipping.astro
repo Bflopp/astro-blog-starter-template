@@ -11,49 +11,69 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
     <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
 
     <style>
-      *, *::before, *::after {
-        box-sizing: border-box;
-      }
+      /* =========================
+         HARD RESET (ISOLATION LAYER)
+      ========================== */
 
       html, body {
+        margin: 0;
+        padding: 0;
         width: 100%;
+        max-width: 100%;
         overflow-x: hidden;
         -webkit-text-size-adjust: 100%;
+        background: #f9fafb;
+        color: #111827;
       }
 
-      body {
-        font-family: system-ui, -apple-system, sans-serif;
-        margin: 0;
-        background: #f9fafb;
-        color: #111; /* 🔥 strong default contrast */
+      /* kill inherited weirdness from global CSS */
+      main, main * {
+        box-sizing: border-box;
       }
 
       main {
         max-width: 720px;
         margin: 2rem auto;
         padding: 1rem;
-        background: white;
+        background: #fff;
         border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+
+        /* 🔥 CRITICAL: prevent layout escape */
         overflow-x: hidden;
       }
 
       h1 {
         font-size: 1.35rem;
         text-align: center;
+        margin-bottom: 0.5rem;
+        color: #111827;
+      }
+
+      h2, h3 {
+        color: #111827;
+      }
+
+      p {
+        color: #4b5563;
+        text-align: center;
       }
 
       form {
         display: flex;
         flex-direction: column;
-        gap: 1.2rem;
+        gap: 1.25rem;
+        width: 100%;
       }
 
       input, textarea {
         width: 100%;
-        padding: 0.8rem;
-        border: 1px solid #d1d5db;
-        border-radius: 8px;
         font-size: 16px;
+        padding: 0.8rem 1rem;
+        border: 1.5px solid #d1d5db;
+        border-radius: 10px;
+        color: #111827;
+        background: #fff;
       }
 
       textarea {
@@ -62,27 +82,31 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 
       button {
         width: 100%;
+        max-width: 220px;
+        align-self: center;
         padding: 0.9rem;
+        border: none;
         background: #2563eb;
         color: white;
         font-weight: 700;
         border-radius: 10px;
-        border: none;
       }
 
       /* =========================
-         CARD FIX (SAFE VERSION)
+         TAP CARDS (BULLETPROOF FIX)
       ========================== */
 
       .card-group {
         display: flex;
         flex-direction: column;
         gap: 0.75rem;
+        width: 100%;
       }
 
       .card-option {
         display: flex;
-        align-items: center;
+        flex-direction: row;
+        align-items: flex-start;
         gap: 0.75rem;
 
         padding: 0.9rem 1rem;
@@ -90,24 +114,43 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         border-radius: 12px;
         background: #fff;
 
-        cursor: pointer;
-
         width: 100%;
+        min-width: 0;
+
+        /* 🔥 prevents iOS flex overflow */
+        overflow: hidden;
       }
 
       .card-option input {
         flex-shrink: 0;
         transform: scale(1.15);
+        margin-top: 0.2rem;
       }
 
-      /* 🔥 THIS IS THE FIX FOR YOUR "BLANK TEXT" ISSUE */
+      /* =========================
+         🔥 CRITICAL VISIBILITY FIX
+      ========================== */
+
       .card-option span {
         display: block !important;
-        color: #111827 !important;   /* FORCE VISIBILITY */
-        opacity: 1 !important;       /* SAFARI FIX */
-        font-size: 1rem;
+        color: #111827 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+
+        font-size: 16px;
         line-height: 1.3;
+
+        /* 🔥 prevents iPhone clipping */
+        min-width: 0;
+        max-width: 100%;
         white-space: normal;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+      }
+
+      /* extra safety override */
+      .card-option * {
+        color: #111827 !important;
       }
 
       .card-option:has(input:checked) {
@@ -118,6 +161,7 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
       @media (max-width: 480px) {
         main {
           margin: 1rem;
+          padding: 1rem;
         }
       }
     </style>
@@ -129,12 +173,18 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
     <main>
       <h1>Shipping Information Form</h1>
 
+      <p>
+        Freight connection request for qualified broker matching.
+      </p>
+
       <form id="shipping-form">
 
         <input type="hidden" name="lead_source" value="Website - Shipping Page" />
 
+        <!-- COMPANY SIZE -->
         <h3>Company Size</h3>
         <div class="card-group">
+
           <label class="card-option">
             <input type="radio" name="company_size" value="1–50 employees" required />
             <span>1–50 employees</span>
@@ -154,10 +204,13 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
             <input type="radio" name="company_size" value="500+ employees" />
             <span>500+ employees</span>
           </label>
+
         </div>
 
+        <!-- URGENCY -->
         <h3>Urgency</h3>
         <div class="card-group">
+
           <label class="card-option">
             <input type="radio" name="urgency" value="Immediate (0–7 days)" required />
             <span>Immediate (0–7 days)</span>
@@ -172,10 +225,13 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
             <input type="radio" name="urgency" value="Ongoing / Planning" />
             <span>Ongoing / Planning</span>
           </label>
+
         </div>
 
+        <!-- EQUIPMENT -->
         <h3>Equipment</h3>
         <div class="card-group">
+
           <label class="card-option">
             <input type="checkbox" name="equipment" value="Dry Van" />
             <span>Dry Van</span>
@@ -195,12 +251,13 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
             <input type="checkbox" name="equipment" value="Specialized / Other" />
             <span>Specialized / Other</span>
           </label>
+
         </div>
 
         <h3>Notes</h3>
         <textarea name="notes"></textarea>
 
-        <button type="submit">Submit</button>
+        <button type="submit">Request Review</button>
       </form>
 
       <script>
