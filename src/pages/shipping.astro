@@ -96,49 +96,48 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
       }
 
       /* =========================
-         CHECKBOX GROUP (EQUIPMENT)
+         TAP CARD BASE STYLE
       ========================== */
 
-      .checkbox-group {
-        display: flex;
-        flex-direction: column;
-        gap: 0.6rem;
-        padding: 0.5rem 0;
+      .card-group {
+        display: grid;
+        gap: 0.75rem;
       }
 
-      .checkbox-group label {
-        display: flex;
-        align-items: center;
-        gap: 0.6rem;
-        font-weight: 500;
-      }
-
-      .checkbox-group input {
-        transform: scale(1.2);
-      }
-
-      /* =========================
-         URGENCY BUTTON GROUP
-      ========================== */
-
-      .radio-group {
-        display: flex;
-        flex-direction: column;
-        gap: 0.6rem;
-        padding: 0.5rem 0;
-      }
-
-      .radio-group label {
+      .card-option {
+        border: 1.5px solid #d1d5db;
+        border-radius: 12px;
+        padding: 0.9rem 1rem;
+        cursor: pointer;
         display: flex;
         align-items: center;
-        gap: 0.6rem;
-        font-weight: 500;
+        gap: 0.75rem;
+        transition: all 0.2s ease;
+        user-select: none;
+        background: #fff;
       }
 
-      .radio-group input {
+      .card-option:hover {
+        border-color: #2563eb;
+        box-shadow: 0 2px 10px rgba(37, 99, 235, 0.15);
+      }
+
+      .card-option input {
         transform: scale(1.2);
+        flex-shrink: 0;
       }
 
+      /* highlight selected state */
+      .card-option input:checked + span {
+        font-weight: 600;
+      }
+
+      .card-option:has(input:checked) {
+        border-color: #2563eb;
+        background: #eff6ff;
+      }
+
+      /* MOBILE */
       @media (max-width: 480px) {
         main {
           margin: 1rem 0.75rem;
@@ -161,7 +160,7 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
       <h2>🚛 Freight Connection Request</h2>
 
       <p class="lead">
-        Bflopp connects shippers with qualified freight brokers based on operational needs and shipping patterns.
+        Bflopp connects shippers with qualified freight brokers based on operational needs and routing patterns.
       </p>
 
       <form id="shipping-form">
@@ -201,25 +200,27 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
           <option>100+ shipments per month</option>
         </select>
 
-        <!-- URGENCY SELECTOR -->
+        <!-- URGENCY TAP CARDS -->
         <h3>Shipping Urgency</h3>
 
-        <label>How soon do you need shipping support?</label>
-        <div class="radio-group">
-          <label>
+        <label>How soon do you need support?</label>
+        <div class="card-group">
+
+          <label class="card-option">
             <input type="radio" name="urgency" value="Immediate (0–7 days)" required />
-            Immediate (0–7 days)
+            <span>⚡ Immediate (0–7 days)</span>
           </label>
 
-          <label>
+          <label class="card-option">
             <input type="radio" name="urgency" value="Short-term (1–4 weeks)" />
-            Short-term (1–4 weeks)
+            <span>📦 Short-term (1–4 weeks)</span>
           </label>
 
-          <label>
+          <label class="card-option">
             <input type="radio" name="urgency" value="Ongoing / Planning" />
-            Ongoing / Planning
+            <span>📅 Ongoing / Planning</span>
           </label>
+
         </div>
 
         <label>Primary Shipment Type</label>
@@ -229,30 +230,32 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
           <option>Mixed</option>
         </select>
 
-        <!-- EQUIPMENT MULTI-SELECT -->
+        <!-- EQUIPMENT TAP CARDS (MULTI SELECT) -->
         <h3>Equipment Needs</h3>
 
         <label>Select all that apply</label>
-        <div class="checkbox-group">
-          <label>
+        <div class="card-group">
+
+          <label class="card-option">
             <input type="checkbox" name="equipment" value="Dry Van" />
-            Dry Van
+            <span>Dry Van</span>
           </label>
 
-          <label>
+          <label class="card-option">
             <input type="checkbox" name="equipment" value="Reefer" />
-            Reefer
+            <span>Reefer</span>
           </label>
 
-          <label>
+          <label class="card-option">
             <input type="checkbox" name="equipment" value="Flatbed" />
-            Flatbed
+            <span>Flatbed</span>
           </label>
 
-          <label>
+          <label class="card-option">
             <input type="checkbox" name="equipment" value="Specialized / Other" />
-            Specialized / Other
+            <span>Specialized / Other</span>
           </label>
+
         </div>
 
         <label>Main Shipping Routes</label>
@@ -283,9 +286,7 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
             await fetch("https://formspree.io/f/maqvnaja", {
               method: "POST",
               body: formData,
-              headers: {
-                Accept: "application/json"
-              }
+              headers: { Accept: "application/json" }
             });
           } catch (err) {}
 
