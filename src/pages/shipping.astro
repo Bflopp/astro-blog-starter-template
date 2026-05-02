@@ -135,9 +135,6 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
   <!-- Lead tracking -->
   <input type="hidden" name="lead_source" value="Website - Shipping Page" />
 
-  <!-- Redirect after successful submission -->
-  <input type="hidden" name="_next" value="https://bflopp.com/thank-you" />
-
         <!-- Optional: email subject -->
         <input type="hidden" name="_subject" value="New Freight Lead - Bflopp" />
 
@@ -208,6 +205,16 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 
         <button type="submit">Request Review</button>
       </form>
+<script>
+  const form = document.getElementById("shipping-form");
+
+  form.addEventListener("submit", function () {
+    // small delay to allow Formspree to receive submission
+    setTimeout(() => {
+      window.location.href = "https://bflopp.com/thank-you";
+    }, 600);
+  });
+</script>
     </main>
     <Footer />
   </body>
