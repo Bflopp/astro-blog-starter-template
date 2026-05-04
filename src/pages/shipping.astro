@@ -40,19 +40,12 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         overflow-x: hidden;
       }
 
-      h1 {
-        text-align: center;
-        color: #111827;
-      }
-
-      h2, h3 {
-        color: #111827;
-        margin-top: 1.5em;
-      }
+      h1 { text-align: center; color: #111827; }
+      h2, h3 { color: #111827; margin-top: 1.5em; }
 
       p.lead {
-        text-align: center;
         color: #6b7280;
+        margin-bottom: 0.5rem;
       }
 
       form {
@@ -67,23 +60,29 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
       label {
         font-weight: 600;
         color: #374151;
+        display: block;
+        margin-bottom: 0.3rem;
       }
 
-      input,
-      select,
-      textarea {
+      input, select, textarea {
         padding: 0.8em 1em;
         border: 1.5px solid #d1d5db;
         border-radius: 8px;
         font-size: 16px;
         width: 100%;
+        transition: border-color 0.2s;
       }
 
-      textarea {
-        min-height: 100px;
+      input:focus, select:focus, textarea:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
       }
 
-      button {
+      textarea { min-height: 100px; resize: vertical; }
+      .field { display: flex; flex-direction: column; }
+
+      button[type="submit"] {
         width: 180px;
         align-self: center;
         padding: 0.75em 1.2em;
@@ -93,131 +92,166 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         font-weight: 700;
         border-radius: 10px;
         cursor: pointer;
+        font-size: 16px;
+        transition: background 0.2s, opacity 0.2s;
       }
 
-      button:hover {
-        background: #1e40af;
+      button[type="submit"]:hover:not(:disabled) { background: #1e40af; }
+      button[type="submit"]:disabled { opacity: 0.65; cursor: not-allowed; }
+
+      .status-msg {
+        text-align: center;
+        font-weight: 600;
+        padding: 0.6rem 1rem;
+        border-radius: 8px;
+        display: none;
+      }
+
+      .status-msg.error {
+        background: #fee2e2;
+        color: #b91c1c;
+        display: block;
       }
 
       @media (max-width: 480px) {
-        main {
-          margin: 1rem 0.75rem;
-          padding: 1rem;
-        }
-
-        button {
-          width: 100%;
-        }
+        main { margin: 1rem 0.75rem; padding: 1rem; }
+        button[type="submit"] { width: 100%; }
       }
     </style>
   </head>
 
   <body>
     <Header />
-
     <main>
-      
       <h2>🚛 Freight Connection Request Form</h2>
+      <p class="lead">Bflopp helps connect shippers with qualified freight brokers based on shipping patterns and operational needs.</p>
+      <p class="lead">Submit your details and we'll identify potential carrier or brokerage matches.</p>
 
-      <p class="lead">
-        Bflopp helps connect shippers with qualified freight brokers based on shipping patterns and operational needs.
-      </p>
-
-      <p class="lead">
-        Submit your details and we’ll identify potential carrier or brokerage matches.
-      </p>
-
-      <!-- FORM -->
-      <form id="shipping-form">
-
+      <form id="shipping-form" novalidate>
         <input type="hidden" name="lead_source" value="Website - Shipping Page" />
         <input type="hidden" name="lead_type" value="broker_match_request" />
 
         <h3>Company Information</h3>
 
-        <label>Company Name</label>
-        <input type="text" name="company" required />
+        <div class="field">
+          <label for="company">Company Name</label>
+          <input type="text" id="company" name="company" autocomplete="organization" required />
+        </div>
 
-        <label>Contact Name</label>
-        <input type="text" name="contact" required />
+        <div class="field">
+          <label for="contact">Contact Name</label>
+          <input type="text" id="contact" name="contact" autocomplete="name" required />
+        </div>
 
-        <label>Email</label>
-        <input type="email" name="email" required />
+        <div class="field">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" autocomplete="email" required />
+        </div>
 
-        <label>Industry</label>
-        <input type="text" name="industry" />
+        <div class="field">
+          <label for="phone">Phone Number</label>
+          <input type="tel" id="phone" name="phone" autocomplete="tel" placeholder="e.g. (503) 555-0100" />
+        </div>
 
-        <label>Company Size</label>
-        <select name="company_size">
-          <option>1–50 employees</option>
-          <option>50–200 employees</option>
-          <option>200–500 employees</option>
-          <option>500+ employees</option>
-        </select>
+        <div class="field">
+          <label for="industry">Industry</label>
+          <input type="text" id="industry" name="industry" autocomplete="off" />
+        </div>
+
+        <div class="field">
+          <label for="company_size">Company Size</label>
+          <select id="company_size" name="company_size">
+            <option>1–50 employees</option>
+            <option>50–200 employees</option>
+            <option>200–500 employees</option>
+            <option>500+ employees</option>
+          </select>
+        </div>
 
         <h3>Shipping Overview</h3>
 
-        <label>Typical Shipment Frequency</label>
-        <select name="shipment_frequency" required>
-          <option>1–5 shipments per month</option>
-          <option>6–20 shipments per month</option>
-          <option>20–100 shipments per month</option>
-          <option>100+ shipments per month</option>
-        </select>
+        <div class="field">
+          <label for="shipment_frequency">Typical Shipment Frequency</label>
+          <select id="shipment_frequency" name="shipment_frequency" required>
+            <option>1–5 shipments per month</option>
+            <option>6–20 shipments per month</option>
+            <option>20–100 shipments per month</option>
+            <option>100+ shipments per month</option>
+          </select>
+        </div>
 
-        <label>Primary Shipment Type</label>
-        <select name="shipment_type">
-          <option>Full Truckload (FTL)</option>
-          <option>Less-than-Truckload (LTL)</option>
-          <option>Mixed</option>
-        </select>
+        <div class="field">
+          <label for="shipment_type">Primary Shipment Type</label>
+          <select id="shipment_type" name="shipment_type">
+            <option>Full Truckload (FTL)</option>
+            <option>Less-than-Truckload (LTL)</option>
+            <option>Mixed</option>
+          </select>
+        </div>
 
-        <label>Equipment Needs</label>
-        <select name="equipment">
-          <option>Dry Van</option>
-          <option>Reefer</option>
-          <option>Flatbed</option>
-          <option>Specialized / Other</option>
-        </select>
+        <div class="field">
+          <label for="equipment">Equipment Needs</label>
+          <select id="equipment" name="equipment">
+            <option>Dry Van</option>
+            <option>Reefer</option>
+            <option>Flatbed</option>
+            <option>Specialized / Other</option>
+          </select>
+        </div>
 
-        <label>Main Shipping Routes</label>
-        <textarea name="lanes" placeholder="Example: Portland → Dallas, Seattle → LA"></textarea>
+        <div class="field">
+          <label for="lanes">Main Shipping Routes</label>
+          <textarea id="lanes" name="lanes" rows="4" placeholder="Example: Portland → Dallas, Seattle → LA"></textarea>
+        </div>
 
         <h3>Logistics Notes</h3>
 
-        <label>Anything else we should know?</label>
-        <textarea name="challenge"></textarea>
+        <div class="field">
+          <label for="challenge">Anything else we should know?</label>
+          <textarea id="challenge" name="challenge" rows="4"></textarea>
+        </div>
 
-        <button type="submit">Request Review</button>
+        <p class="status-msg" id="status-msg" role="alert">
+          Something went wrong. Please try again or email us directly.
+        </p>
+
+        <button type="submit" id="submit-btn">Request Review</button>
       </form>
 
-      <!-- FORM HANDLER + REDIRECT -->
       <script>
         const form = document.getElementById("shipping-form");
+        const btn = document.getElementById("submit-btn");
+        const statusMsg = document.getElementById("status-msg");
 
         form.addEventListener("submit", async function (e) {
           e.preventDefault();
+          btn.disabled = true;
+          btn.textContent = "Submitting…";
+          statusMsg.classList.remove("error");
 
           const formData = new FormData(form);
 
           try {
-            await fetch("https://formspree.io/f/maqvnaja", {
+            const res = await fetch("https://formspree.io/f/maqvnaja", {
               method: "POST",
               body: formData,
-              headers: {
-                Accept: "application/json"
-              }
+              headers: { Accept: "application/json" }
             });
-          } catch (err) {
-            // ignore errors
-          }
 
-          window.location.href = "https://bflopp.com/thank-you";
+            if (res.ok) {
+              window.location.href = "https://bflopp.com/thank-you";
+            } else {
+              throw new Error("Non-OK response");
+            }
+          } catch (err) {
+            statusMsg.classList.add("error");
+            btn.disabled = false;
+            btn.textContent = "Request Review";
+          }
         });
       </script>
 
     </main>
-
     <Footer />
   </body>
 </html>
