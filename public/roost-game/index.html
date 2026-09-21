@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>ROOST — Dirt Bike Trivia</title>
+<meta name="description" content="ROOST is a dirt-bike themed rarity trivia game. Seven timed prompts, obscure answers ride farther.">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: #160f16;
+    color: #f5e9d0;
+    font-family: "Courier New", Courier, monospace;
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+  }
+  /* Fixed pixel-art background */
+  #bg {
+    position: fixed; inset: 0;
+    width: 100%; height: 100%;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    z-index: 0;
+  }
+  #shade {
+    position: fixed; inset: 0; z-index: 1; pointer-events: none;
+    background: linear-gradient(to bottom, rgba(10,7,18,.66) 0%, rgba(10,7,18,.55) 45%, rgba(10,7,18,.78) 100%);
+  }
+  /* Slim vertical trail gauge */
+  #gauge {
+    position: fixed; right: 10px; top: 50%; transform: translateY(-50%);
+    width: 30px; height: 62vh; min-height: 280px; z-index: 2;
+    background: #100c1c; border: 2px solid #000;
+    box-shadow: 3px 3px 0 rgba(0,0,0,.5);
+  }
+  #gauge .band { position: absolute; left: 0; width: 100%; }
+  #gauge .tick {
+    position: absolute; left: 0; width: 100%; height: 2px; background: #fff; opacity: .9;
+  }
+  #gauge .tick span {
+    display: none;
+    position: absolute; right: 34px; top: -7px; white-space: nowrap;
+    font-size: 10px; color: #ffe9c4; background: rgba(10,7,18,.85);
+    padding: 2px 5px; border: 1px solid #000;
+  }
+  #gauge .rider-dot {
+    position: absolute; left: -4px; width: 36px; height: 10px;
+    background: #ffb347; border: 2px solid #000; z-index: 3;
+  }
+  @media (min-width: 760px) { #gauge .tick span { display: block; } }
+  /* Centered quiz column */
+  #app {
+    position: relative; z-index: 3;
+    max-width: 680px; margin: 0 auto;
+    min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 24px 18px 64px;
+  }
+  .panel {
+    background: rgba(17,13,30,.95);
+    border: 3px solid #4a3620;
+    box-shadow: 0 0 0 3px #0b0812, 0 10px 34px rgba(0,0,0,.65);
+    border-radius: 4px;
+    padding: 30px 26px;
+  }
+  h1.game-title {
+    font-size: 64px; letter-spacing: 10px; text-align: center;
+    color: #ffb347; text-shadow: 4px 4px 0 #7a2d00, 8px 8px 0 rgba(0,0,0,.55);
+    margin-bottom: 4px;
+  }
+  .tagline { text-align: center; color: #e8d5ae; font-size: 16px; margin-bottom: 20px; letter-spacing: 1px; }
+  h2.screen-title {
+    font-size: 26px; letter-spacing: 3px; color: #ffb347;
+    text-shadow: 2px 2px 0 #000; margin-bottom: 14px; text-align: center;
+  }
+  .howto {
+    font-size: 14px; line-height: 1.75; color: #d9c9a3;
+    background: rgba(0,0,0,.28); border: 2px solid #000;
+    padding: 14px 16px; margin: 0 0 20px;
+  }
+  .howto b { color: #ffb347; }
+  .btn {
+    display: block; width: 100%;
+    font-family: inherit; font-size: 19px; font-weight: bold; letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #221204; background: #ffb347; border: 0;
+    padding: 16px 12px; margin: 10px 0; cursor: pointer;
+    box-shadow: 0 5px 0 #9c5510, 0 9px 0 rgba(0,0,0,.45);
+  }
+  .btn:active { transform: translateY(4px); box-shadow: 0 1px 0 #9c5510; }
+  .btn.secondary { background: #8a6f4d; color: #fff4dd; box-shadow: 0 5px 0 #4d3a22, 0 9px 0 rgba(0,0,0,.45); }
+  .btn.secondary:active { box-shadow: 0 1px 0 #4d3a22; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+  .btn-row { display: flex; gap: 12px; }
+  .btn-row .btn { margin: 10px 0 0; }
+  .checkpoint-label { text-align: center; font-size: 14px; letter-spacing: 3px; color: #cbb27f; margin-bottom: 6px; }
+  .prompt { font-size: 30px; text-align: center; color: #fff4dd; text-shadow: 3px 3px 0 #000; margin: 6px 0 4px; line-height: 1.25; }
+  .dist-readout { text-align: center; font-size: 15px; color: #ffb347; letter-spacing: 1px; margin: 8px 0 2px; }
+  .segs { display: flex; gap: 6px; margin: 14px 0 4px; }
+  .seg { flex: 1; height: 14px; background: #241a30; border: 2px solid #000; }
+  .seg.done { background: #ffb347; }
+  .seg.now { background: #ff3b30; animation: blink 1s steps(2) infinite; }
+  @keyframes blink { 50% { opacity: .35; } }
+  .timer { height: 20px; background: #241a30; border: 2px solid #000; margin: 14px 0; }
+  .timer > div { height: 100%; width: 100%; background: #8ee06a; transition: width .12s linear; }
+  .timer.low > div { background: #ff3b30; }
+  .timer-num { text-align: center; font-size: 22px; font-weight: bold; color: #fff4dd; text-shadow: 2px 2px 0 #000; }
+  .timer.low .timer-num, .timer-num.low { color: #ff5b4d; }
+  input[type=text] {
+    width: 100%; font-family: inherit; font-size: 22px;
+    padding: 15px 14px; margin: 12px 0;
+    background: #0d0a17; color: #ffe9c4;
+    border: 3px solid #ffb347; border-radius: 0;
+  }
+  input[type=text]:focus { outline: none; box-shadow: 0 0 0 3px rgba(255,179,71,.35); }
+  .reveal-answer { font-size: 24px; text-align: center; margin: 10px 0; color: #fff4dd; text-shadow: 2px 2px 0 #000; word-break: break-word; }
+  .verdict {
+    text-align: center; font-size: 20px; font-weight: bold; letter-spacing: 2px;
+    padding: 10px; margin: 12px 0; border: 3px solid #000;
+  }
+  .verdict.good { background: #2f6b2f; color: #eaffea; }
+  .verdict.bad { background: #6b2f2f; color: #ffeaea; }
+  .tier-line { text-align: center; font-size: 17px; color: #ffb347; margin: 8px 0; letter-spacing: 1px; }
+  .pts-line { text-align: center; font-size: 40px; font-weight: bold; color: #fff4dd; text-shadow: 3px 3px 0 #000; margin: 4px 0 8px; }
+  .spell-note {
+    text-align: center; font-size: 13px; color: #cfe3ff;
+    background: rgba(40,60,120,.35); border: 2px dashed #7d9bd1;
+    padding: 8px; margin: 10px 0;
+  }
+  .breakdown { margin: 16px 0; border: 2px solid #000; }
+  .breakdown .brow {
+    display: flex; justify-content: space-between; gap: 8px;
+    padding: 9px 12px; font-size: 13px; border-bottom: 2px solid #000;
+    background: rgba(0,0,0,.25); color: #e8d5ae;
+  }
+  .breakdown .brow:last-child { border-bottom: 0; }
+  .breakdown .brow .pts { color: #ffb347; font-weight: bold; white-space: nowrap; }
+  .bests { text-align: center; font-size: 14px; color: #cbb27f; margin: 14px 0 4px; line-height: 1.8; }
+  .bests b { color: #ffb347; }
+  .mute-btn {
+    position: fixed; left: 12px; top: 12px; z-index: 5;
+    font-family: inherit; font-size: 13px; font-weight: bold; letter-spacing: 1px;
+    background: rgba(17,13,30,.92); color: #ffb347;
+    border: 2px solid #4a3620; padding: 9px 12px; cursor: pointer;
+  }
+  .home-note { text-align: center; font-size: 12px; color: #9d8a63; margin-top: 14px; line-height: 1.6; }
+  .rank-big { text-align: center; font-size: 30px; color: #ffb347; text-shadow: 3px 3px 0 #000; letter-spacing: 2px; margin: 8px 0; }
+  .total-big { text-align: center; font-size: 52px; font-weight: bold; color: #fff4dd; text-shadow: 4px 4px 0 #000; }
+  .total-sub { text-align: center; font-size: 15px; color: #cbb27f; margin-bottom: 10px; }
+  @media (max-width: 520px) {
+    h1.game-title { font-size: 46px; letter-spacing: 6px; }
+    .prompt { font-size: 24px; }
+    .panel { padding: 22px 16px; }
+    #app { padding: 16px 12px 56px; }
+    #gauge { right: 6px; width: 24px; }
+    #gauge .rider-dot { width: 30px; }
+  }
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<div id="shade"></div>
+<div id="gauge" aria-hidden="true"></div>
+<button class="mute-btn" id="muteBtn" type="button">SOUND: ON</button>
+<div id="app"></div>
+<script>
+"use strict";
+/* ================= Utilities ================= */
+function $(id){ return document.getElementById(id); }
+
+function normalize(s){
+  return s.toLowerCase().trim()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ").trim()
+    .replace(/^the /, "").trim();
+}
+
+/* Damerau-Levenshtein (optimal string alignment) */
+function damerau(a, b){
+  var al = a.length, bl = b.length, i, j, cost;
+  var d = [];
+  for (i = 0; i <= al; i++){ d[i] = []; d[i][0] = i; }
+  for (j = 0; j <= bl; j++){ d[0][j] = j; }
+  for (i = 1; i <= al; i++){
+    for (j = 1; j <= bl; j++){
+      cost = (a.charAt(i-1) === b.charAt(j-1)) ? 0 : 1;
+      d[i][j] = Math.min(d[i-1][j] + 1, d[i][j-1] + 1, d[i-1][j-1] + cost);
+      if (i > 1 && j > 1 && a.charAt(i-1) === b.charAt(j-2) && a.charAt(i-2) === b.charAt(j-1)){
+        d[i][j] = Math.min(d[i][j], d[i-2][j-2] + 1);
+      }
+    }
+  }
+  return d[al][bl];
+}
+
+function hashStr(s){
+  var h = 2166136261;
+  for (var i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return h >>> 0;
+}
+function mulberry32(seed){
+  var a = seed >>> 0;
+  return function(){
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    var t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function localDateStr(){
+  var d = new Date();
+  function p(n){ return (n < 10 ? "0" : "") + n; }
+  return d.getFullYear() + "-" + p(d.getMonth()+1) + "-" + p(d.getDate());
+}
+function fmt(n){ return n.toLocaleString("en-US"); }
+function esc(s){
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+function hashN(n){ var x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); }
+function lerp(a, b, t){ return a + (b - a) * t; }
+function lerpC(c1, c2, t){
+  return [Math.round(lerp(c1[0],c2[0],t)), Math.round(lerp(c1[1],c2[1],t)), Math.round(lerp(c1[2],c2[2],t))];
+}
+function css(c){ return "rgb(" + c[0] + "," + c[1] + "," + c[2] + ")"; }
+
+/* ================= Audio (WebAudio, no files) ================= */
+var AC = null;
+function audioCtx(){
+  if (!AC){ var Ctor = window.AudioContext || window.webkitAudioContext; if (Ctor) AC = new Ctor(); }
+  if (AC && AC.state === "suspended") AC.resume();
+  return AC;
+}
+function tone(freq, dur, type, vol, when, slideTo){
+  if (S.muted) return;
+  var ctx = audioCtx(); if (!ctx) return;
+  var t0 = ctx.currentTime + (when || 0);
+  var o = ctx.createOscillator(), g = ctx.createGain();
+  o.type = type || "square";
+  o.frequency.setValueAtTime(freq, t0);
+  if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, t0 + dur);
+  g.gain.setValueAtTime(vol || 0.12, t0);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  o.connect(g); g.connect(ctx.destination);
+  o.start(t0); o.stop(t0 + dur + 0.05);
+}
+function sndTick(){ tone(880, 0.06, "square", 0.10); }
+function sndChime(){ tone(660, 0.14, "sine", 0.16); tone(990, 0.22, "sine", 0.16, 0.11); }
+function sndThud(){ tone(95, 0.28, "sine", 0.22, 0, 45); }
+function sndRev(){
+  if (S.muted) return;
+  var ctx = audioCtx(); if (!ctx) return;
+  var t0 = ctx.currentTime;
+  var o = ctx.createOscillator(), g = ctx.createGain(), f = ctx.createBiquadFilter();
+  o.type = "sawtooth";
+  o.frequency.setValueAtTime(70, t0);
+  o.frequency.exponentialRampToValueAtTime(420, t0 + 1.15);
+  f.type = "lowpass"; f.frequency.setValueAtTime(900, t0);
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(0.22, t0 + 0.25);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + 1.3);
+  o.connect(f); f.connect(g); g.connect(ctx.destination);
+  o.start(t0); o.stop(t0 + 1.4);
+}
+</script>
+<script>
+"use strict";
+/* ================= Answer dataset =================
+   Format: [name, points] or [name, points, [aliases...]] */
+var CATEGORIES = [
+{id:"fruit", prompt:"Name a fruit", answers:[
+["apple",10],["banana",10],["orange",12],["strawberry",12],["grape",15],
+["watermelon",15],["pineapple",20],["mango",25],["peach",25],["pear",25],
+["lemon",25],["cherry",30],["blueberry",35],["kiwi",40],["coconut",40],
+["lime",45],["plum",45],["raspberry",50],["blackberry",50],["avocado",55],
+["pomegranate",60],["fig",60],["apricot",65],["papaya",65],["cranberry",70],
+["guava",70],["passionfruit",75,["passion fruit"]],["dragonfruit",80,["dragon fruit"]],
+["lychee",80,["litchi"]],["durian",85],["persimmon",85],["kumquat",90],
+["rambutan",95],["mangosteen",100]]},
+{id:"country", prompt:"Name a country", answers:[
+["united states",10,["usa","us","america"]],["france",10],["japan",12],["italy",12],
+["germany",15],["spain",15],["canada",15],["brazil",20],["china",20],["australia",20],
+["mexico",25],["united kingdom",25,["uk","britain","england"]],["india",25],
+["egypt",30],["greece",30],["thailand",30],["argentina",35],["netherlands",35,["holland"]],
+["switzerland",40],["norway",40],["sweden",45],["south korea",45,["korea"]],["portugal",45],
+["peru",55],["poland",55],["turkey",55],["indonesia",60],["new zealand",60],["iceland",60],
+["vietnam",60],["morocco",65],["malaysia",65],["philippines",65],["kenya",70],["nepal",70],
+["chile",70],["colombia",70],["finland",70],["denmark",70],["belgium",75],["austria",75],
+["mongolia",75],["hungary",80],["romania",80],["czechia",80,["czech republic"]],
+["ecuador",85],["bolivia",85],["uruguay",85],["luxembourg",90],["malta",90],
+["kazakhstan",90],["paraguay",90],["uzbekistan",95],["bhutan",95],["andorra",95],
+["liechtenstein",100],["san marino",100]]},
+{id:"mammal", prompt:"Name a mammal", answers:[
+["dog",10],["cat",10],["elephant",12],["lion",12],["tiger",15],["bear",15],["horse",15],
+["monkey",20],["whale",20],["dolphin",20],["giraffe",25],["zebra",25],["kangaroo",25],
+["panda",30,["giant panda"]],["koala",30],["wolf",30],["fox",30],["deer",35],["rabbit",35],
+["squirrel",35],["mouse",40],["bat",45],["rat",45],["raccoon",45],["skunk",50],["otter",50],
+["beaver",50],["moose",55],["hippopotamus",55,["hippo"]],["rhinoceros",55,["rhino"]],
+["gorilla",55],["chimpanzee",60,["chimp"]],["sloth",60],["orangutan",65],["anteater",65],
+["armadillo",70],["porcupine",70],["hedgehog",70],["wombat",75],["capybara",75],
+["manatee",80],["platypus",80],["tapir",85],["narwhal",85],["echidna",85],["pangolin",90],
+["okapi",95],["aardvark",100]]},
+{id:"movie", prompt:"Name a movie", answers:[
+["titanic",10],["avatar",10],["jurassic park",12],["avengers endgame",12,["avengers: endgame","endgame"]],
+["star wars",15],["the lion king",15,["lion king"]],["frozen",15],["toy story",20],["jaws",20],
+["e.t.",25,["et"]],["back to the future",25],["forrest gump",25],["the godfather",30,["godfather"]],
+["pulp fiction",30],["shrek",30],["finding nemo",30],["harry potter",30],["inception",35],
+["interstellar",35],["the matrix",35,["matrix"]],["gladiator",40],["top gun",40],["black panther",40],
+["the dark knight",40,["dark knight"]],["spider-man",40,["spiderman","spider man"]],
+["barbie",45],["oppenheimer",45],["dune",50],["the shawshank redemption",55,["shawshank redemption"]],
+["parasite",55],["spirited away",60],["everything everywhere all at once",60],["casablanca",65],
+["psycho",65],["the shining",65,["shining"]],["alien",70],["blade runner",70],
+["mad max fury road",70,["mad max","fury road"]],["whiplash",75],["la la land",75],["coco",75],
+["encanto",75],["ratatouille",80],["the grand budapest hotel",80,["grand budapest hotel"]],
+["amelie",80],["memento",85],["eternal sunshine of the spotless mind",85,["eternal sunshine"]],
+["her",85],["the social network",85],["2001 a space odyssey",85,["2001"]],["taxi driver",90],
+["raging bull",90],["apocalypse now",90],["the seventh seal",95,["seventh seal"]],
+["stalker",100],["persona",100]]},
+{id:"vegetable", prompt:"Name a vegetable", answers:[
+["carrot",10],["broccoli",10],["potato",12],["tomato",12],["lettuce",15],["cucumber",15],
+["corn",15],["onion",20],["bell pepper",20,["pepper"]],["spinach",25],["celery",25],
+["mushroom",25],["cabbage",30],["cauliflower",30],["peas",35,["pea"]],["green beans",35,["green bean"]],
+["asparagus",40],["zucchini",40],["eggplant",45],["kale",45],["brussels sprouts",50,["brussel sprouts"]],
+["artichoke",55],["beet",55,["beets"]],["radish",55],["turnip",60],["leek",60],["parsnip",65],
+["okra",65],["bok choy",70],["edamame",70],["fennel",70],["collard greens",70,["collards"]],
+["daikon",75],["swiss chard",75],["jicama",75],["rutabaga",80],["watercress",85],["endive",85],
+["kohlrabi",85],["radicchio",90],["salsify",100]]},
+{id:"sport", prompt:"Name a sport", answers:[
+["soccer",10],["basketball",12],["baseball",15],["tennis",15],["american football",15,["football","nfl"]],
+["swimming",20],["golf",20],["running",25,["track"]],["boxing",25],["volleyball",30],["rugby",30],
+["cricket",30],["ice hockey",30,["hockey"]],["cycling",35],["skiing",35],["snowboarding",35],
+["surfing",35],["skateboarding",40],["gymnastics",40],["wrestling",40],["karate",45],
+["martial arts",45],["judo",50],["taekwondo",50],["fencing",55],["archery",55],["rowing",55],
+["badminton",55],["table tennis",55,["ping pong"]],["pickleball",60],["sailing",60],
+["rock climbing",60,["climbing"]],["handball",65],["water polo",65],["squash",65],["lacrosse",65],
+["softball",70],["field hockey",70],["bobsled",70,["bobsleigh"]],["triathlon",75],["biathlon",75],
+["luge",75],["curling",80],["skeleton",80],["synchronized swimming",85,["artistic swimming"]],
+["dressage",85],["sumo",85],["kabaddi",90],["sepak takraw",95],["bandy",100],["hurling",100]]},
+{id:"car", prompt:"Name a car brand", answers:[
+["toyota",10],["ford",10],["honda",12],["tesla",12],["bmw",15],["mercedes-benz",15,["mercedes"]],
+["audi",15],["chevrolet",15,["chevy"]],["nissan",20],["volkswagen",20,["vw"]],["hyundai",20],
+["kia",20],["subaru",25],["mazda",25],["jeep",25],["porsche",30],["ferrari",30],["lamborghini",30],
+["volvo",35],["lexus",35],["jaguar",35],["land rover",40],["mini",40],["fiat",40],["peugeot",45],
+["renault",45],["citroen",50],["alfa romeo",55],["cadillac",55],["chrysler",55],["dodge",55],
+["maserati",60],["infiniti",60],["acura",60],["gmc",60],["bentley",60],["lincoln",60],
+["aston martin",65],["ram",65],["rolls-royce",65,["rolls royce"]],["genesis",70],["mclaren",70],
+["hummer",70],["rivian",70],["polestar",75],["pontiac",75],["lucid",75],["bugatti",75],["saab",80],
+["saturn",80],["lotus",85],["koenigsegg",85],["pagani",90],["delorean",95],["morgan",100]]},
+{id:"instrument", prompt:"Name a musical instrument", answers:[
+["piano",10],["guitar",10],["violin",12],["drums",12,["drum"]],["trumpet",15],["flute",15],
+["saxophone",15,["sax"]],["clarinet",20],["cello",20],["bass",20,["bass guitar"]],["trombone",25],
+["tuba",25],["harmonica",25],["ukulele",25],["banjo",30],["accordion",30],["xylophone",30],
+["harp",35],["oboe",35],["bassoon",35],["french horn",40,["horn"]],["viola",40],["mandolin",40],
+["bagpipes",45,["bagpipe"]],["sitar",45],["tambourine",45],["didgeridoo",50],["bongos",50,["bongo"]],
+["congas",50,["conga"]],["maracas",50],["cymbals",50,["cymbal"]],["kazoo",55],["recorder",55],
+["triangle",55],["ocarina",60],["synthesizer",60,["synth"]],["keyboard",60],["organ",65],
+["theremin",65],["double bass",65],["lute",70],["harpsichord",70],["glockenspiel",70],
+["balalaika",75],["vibraphone",75],["steel drum",75,["steelpan"]],["erhu",80],["koto",80],
+["handpan",85],["hurdy-gurdy",90],["glass harmonica",100],["serpent",100]]},
+{id:"seacreature", prompt:"Name an animal that lives in the ocean", answers:[
+["shark",10],["whale",10],["dolphin",12],["octopus",12],["jellyfish",15],["crab",15],
+["lobster",15],["shrimp",15],["squid",20],["seahorse",20],["starfish",20],["sea turtle",20,["turtle"]],
+["clownfish",25,["clown fish"]],["tuna",25],["salmon",25],["eel",25],["seal",30],["sea lion",30],
+["stingray",30],["penguin",35],["walrus",35],["manta ray",35],["sea otter",40,["otter"]],
+["sea urchin",40],["sea cucumber",45],["anemone",45,["sea anemone"]],["krill",50],["plankton",50],
+["cuttlefish",50],["nautilus",55],["moray eel",60],["barracuda",60],["anglerfish",60,["angler fish"]],
+["lanternfish",60],["swordfish",65],["marlin",65],["grouper",65],["pufferfish",65,["puffer fish","blowfish"]],
+["lionfish",70],["horseshoe crab",70],["sailfish",70],["sea slug",75],["mantis shrimp",75],
+["stonefish",80],["blue-ringed octopus",80],["nudibranch",85],["vampire squid",85],["gulper eel",90],
+["frilled shark",90],["dumbo octopus",90],["goblin shark",95],["coelacanth",100]]},
+{id:"dessert", prompt:"Name a dessert", answers:[
+["ice cream",10],["cake",10],["chocolate cake",12],["brownie",12],["cookie",12],["cupcake",15],
+["pie",15],["apple pie",15],["cheesecake",20],["donut",20,["doughnut"]],["muffin",25],["pudding",25],
+["custard",30],["flan",30],["tiramisu",30],["creme brulee",35],["macaron",35],["eclair",40],
+["mousse",40],["churros",40,["churro"]],["panna cotta",40],["trifle",45],["baklava",45],["souffle",45],
+["pavlova",50],["cannoli",50,["cannolo"]],["funnel cake",50],["profiterole",50],["gelato",55],
+["sorbet",55],["beignet",55],["sherbet",60],["pecan pie",60],["key lime pie",65],["affogato",65],
+["madeleine",70],["tres leches",70],["semifreddo",70],["clafoutis",75],["opera cake",75],
+["zabaglione",75],["financier",80],["sacher torte",80],["panettone",80],["linzer torte",85],
+["baked alaska",85],["stollen",85],["floating island",90],["shoofly pie",95],["blancmange",100]]},
+{id:"dogbreed", prompt:"Name a dog breed", answers:[
+["labrador retriever",10,["labrador","lab"]],["golden retriever",10,["golden"]],["german shepherd",12],
+["poodle",12],["bulldog",15],["beagle",15],["siberian husky",20,["husky"]],["pug",20],["chihuahua",20],
+["dachshund",25],["boxer",25],["rottweiler",25],["doberman",30,["dobermann"]],["great dane",30],
+["border collie",30],["australian shepherd",35],["corgi",35],["shih tzu",35],["yorkshire terrier",35,["yorkie"]],
+["maltese",40],["pomeranian",40,["pom"]],["cocker spaniel",40],["dalmatian",40],
+["french bulldog",45,["frenchie"]],["greyhound",45],["mastiff",45],["saint bernard",50],
+["newfoundland",55],["bernese mountain dog",55],["akita",55],["shiba inu",60],["samoyed",60],
+["weimaraner",65],["rhodesian ridgeback",65,["ridgeback"]],["bloodhound",65],["basset hound",65],
+["pit bull",70,["pitbull"]],["bull terrier",70],["vizsla",70],["english setter",75],["irish setter",75],
+["pointer",75],["saluki",80],["afghan hound",80],["basenji",85],["chow chow",85],["shar pei",85],
+["keeshond",90],["norwegian elkhound",90],["finnish spitz",95],["xoloitzcuintli",100,["xolo"]],
+["catalburun",100]]},
+{id:"capital", prompt:"Name a capital city", answers:[
+["paris",10],["london",10],["tokyo",12],["rome",12],["madrid",15],["berlin",15],
+["washington",15,["washington dc","washington d.c.","dc"]],["ottawa",20],["canberra",20],["beijing",20],
+["moscow",25],["cairo",25],["athens",25],["lisbon",30],["dublin",30],["amsterdam",30],["vienna",35],
+["prague",35],["stockholm",35],["seoul",40],["oslo",40],["helsinki",40],["copenhagen",40],
+["warsaw",45],["budapest",45],["bangkok",45],["new delhi",45,["delhi"]],["jakarta",50],["manila",50],
+["hanoi",50],["kuala lumpur",55],["singapore",55],["mexico city",60],["wellington",60],["reykjavik",60],
+["lima",60],["brasilia",65],["bogota",65],["santiago",65],["buenos aires",65],["havana",70],
+["kingston",70],["nairobi",70],["accra",75],["dakar",75],["rabat",75],["tunis",75],["algiers",75],
+["abuja",80],["tripoli",80],["khartoum",85],["addis ababa",85],["kigali",85],["kampala",85],
+["kathmandu",85],["ulaanbaatar",90],["antananarivo",90],["male",90],["thimphu",95],["apia",95],
+["funafuti",100],["palikir",100],["yaren",100]]},
+{id:"dirtbike", prompt:"Name a dirt bike brand", answers:[
+["honda",10],["yamaha",10],["ktm",12],["kawasaki",15],["suzuki",15],["husqvarna",20,["husky"]],
+["gasgas",25],["beta",30],["sherco",40],["cobra",45],["tm",50,["tm racing"]],["stark",55,["stark varg"]],
+["alta",60],["rieju",70],["ajp",80],["christini",90],["atk",100]]}
+];
+
+/* Pre-build lookup maps: normalized string -> {pts, canon} */
+CATEGORIES.forEach(function(cat){
+  var map = {};
+  cat.answers.forEach(function(entry){
+    var canon = entry[0], pts = entry[1], aliases = entry[2] || [];
+    var keys = [canon].concat(aliases);
+    keys.forEach(function(k){
+      var nk = normalize(k);
+      if (!(nk in map)) map[nk] = {pts: pts, canon: canon};
+    });
+  });
+  cat.map = map;
+  cat.keys = Object.keys(map);
+});
+
+/* ================= Answer checking ================= */
+function checkAnswer(raw, cat){
+  var n = normalize(raw);
+  if (!n) return {ok:false, pts:0, tier:"Stalled Out", fuzzy:null};
+  var hit = cat.map[n];
+  if (hit) return {ok:true, pts:hit.pts, tier:tierFor(hit.pts), fuzzy:null};
+  /* plural fallback */
+  var stem = null;
+  if (/ies$/.test(n)) stem = n.slice(0,-3) + "y";
+  else if (/s$/.test(n) && !/ss$/.test(n)) stem = n.slice(0,-1);
+  if (stem && cat.map[stem]) return {ok:true, pts:cat.map[stem].pts, tier:tierFor(cat.map[stem].pts), fuzzy:null};
+  /* spell-check fuzzy match */
+  if (n.length >= 4){
+    var best = null, bestD = 99;
+    for (var i = 0; i < cat.keys.length; i++){
+      var k = cat.keys[i];
+      if (k.charAt(0) !== n.charAt(0)) continue;
+      var maxD = (k.length <= 8) ? 1 : 2;
+      var d = damerau(n, k);
+      if (d <= maxD && d < bestD){ bestD = d; best = k; }
+    }
+    if (best){
+      var rec = cat.map[best];
+      return {ok:true, pts:rec.pts, tier:tierFor(rec.pts), fuzzy:{read: raw.trim(), as: rec.canon}};
+    }
+  }
+  return {ok:false, pts:0, tier:"Stalled Out", fuzzy:null};
+}
+
+function tierFor(p){
+  if (p <= 10) return "Training Wheels";
+  if (p <= 25) return "Pit Crew";
+  if (p <= 40) return "Trail Rider";
+  if (p <= 60) return "Moto Head";
+  if (p <= 85) return "Pro Circuit";
+  return "Factory Legend";
+}
+var ZONES = [
+  {max:200, name:"Practice Track", color:"#7ec850"},
+  {max:1000, name:"Forest Single-Track", color:"#2e9e6b"},
+  {max:4000, name:"Desert Wash", color:"#d9a441"},
+  {max:6000, name:"Rocky Climb", color:"#b0623a"},
+  {max:7000, name:"Summit Ridge", color:"#9b6bd3"}
+];
+var MARKERS = [
+  {m:0, name:"Start Gate"},
+  {m:450, name:"Whoops Section"},
+  {m:1200, name:"Rhythm Section"},
+  {m:3000, name:"Sand Wash"},
+  {m:5000, name:"Rock Garden"},
+  {m:7000, name:"Finish Line"}
+];
+function zoneFor(d){
+  for (var i = 0; i < ZONES.length; i++) if (d <= ZONES[i].max) return ZONES[i];
+  return ZONES[ZONES.length-1];
+}
+function rankFor(p){
+  if (p < 100) return "Pit Newbie";
+  if (p < 250) return "Weekend Warrior";
+  if (p < 400) return "Trail Boss";
+  if (p < 550) return "Moto Veteran";
+  if (p < 650) return "Desert Racer";
+  return "Baja Legend";
+}
+</script>
+<script>
+"use strict";
+/* ================= Game state (in-memory only — no storage APIs) ================= */
+var S = {
+  mode: null, cats: [], round: 0,
+  points: 0, targetDist: 0, dispDist: 0,
+  breakdown: [],
+  dailyDone: false, muted: false,
+  best: {daily: 0, unlimited: 0},
+  timerId: null, deadline: 0, lastTickSec: -1, submitted: false,
+  burst: 0
+};
+var ROUND_MS = 20000;
+
+function segsHTML(doneCount, current){
+  var h = '<div class="segs">';
+  for (var i = 0; i < 7; i++){
+    var cls = "seg";
+    if (i < doneCount) cls += " done";
+    else if (i === current) cls += " now";
+    h += '<div class="' + cls + '"></div>';
+  }
+  return h + "</div>";
+}
+function distReadoutHTML(){
+  return '<div class="dist-readout"><span id="distReadout">0 m</span></div>';
+}
+
+/* ================= Screens ================= */
+function showHome(){
+  stopTimer();
+  var dailyBtn = S.dailyDone
+    ? '<button class="btn secondary" type="button" disabled>Daily Ride (done)</button>'
+    : '<button class="btn" type="button" id="dailyBtn">Daily Ride</button>';
+  $("app").innerHTML =
+    '<div class="panel">' +
+    '<h1 class="game-title">ROOST</h1>' +
+    '<div class="tagline">How far can your answers take you?</div>' +
+    '<div class="howto">' +
+    "<b>7 prompts. 20 seconds each.</b><br>" +
+    "Every valid answer has a hidden rarity: obvious answers putt along for ~10 pts, " +
+    "obscure-but-valid answers pin the throttle up to 100.<br>" +
+    "Each point = <b>10 meters of trail</b>. Blank or invalid = stalled at 0.<br>" +
+    "Max 700 pts = 7,000 m of trail. Typos get spell-checked.<br>" +
+    "Daily Ride: same 7 checkpoints all day, one attempt per visit." +
+    "</div>" +
+    dailyBtn +
+    '<button class="btn secondary" type="button" id="unlBtn">Unlimited Ride</button>' +
+    '<div class="bests">Session bests — Daily: <b>' + S.best.daily + '</b> pts &nbsp; Unlimited: <b>' + S.best.unlimited + '</b> pts</div>' +
+    '<div class="home-note">Best scores live for this visit only.<br>No account, no tracking.</div>' +
+    "</div>";
+  if (!S.dailyDone) $("dailyBtn").onclick = function(){ startRide("daily"); };
+  $("unlBtn").onclick = function(){ startRide("unlimited"); };
+}
+
+function pickDaily(){
+  var rng = mulberry32(hashStr("roost-" + localDateStr()));
+  var idx = CATEGORIES.map(function(_, i){ return i; });
+  for (var i = idx.length - 1; i > 0; i--){
+    var j = Math.floor(rng() * (i + 1)), t = idx[i];
+    idx[i] = idx[j]; idx[j] = t;
+  }
+  return idx.slice(0, 7).map(function(i){ return CATEGORIES[i]; });
+}
+function pickUnlimited(){
+  var idx = CATEGORIES.map(function(_, i){ return i; });
+  for (var i = idx.length - 1; i > 0; i--){
+    var j = Math.floor(Math.random() * (i + 1)), t = idx[i];
+    idx[i] = idx[j]; idx[j] = t;
+  }
+  return idx.slice(0, 7).map(function(i){ return CATEGORIES[i]; });
+}
+
+function startRide(mode){
+  audioCtx();
+  if (mode === "daily"){
+    if (S.dailyDone){ showHome(); return; }
+    S.dailyDone = true;
+    S.cats = pickDaily();
+  } else {
+    S.cats = pickUnlimited();
+  }
+  S.mode = mode; S.round = 0; S.points = 0;
+  S.targetDist = 0; S.dispDist = 0;
+  S.breakdown = []; S.burst = 0;
+  showRound();
+}
+
+function showRound(){
+  stopTimer();
+  var cat = S.cats[S.round];
+  $("app").innerHTML =
+    '<div class="panel">' +
+    '<div class="checkpoint-label">CHECKPOINT ' + (S.round + 1) + ' OF 7</div>' +
+    segsHTML(S.round, S.round) +
+    '<div class="prompt">' + esc(cat.prompt) + "</div>" +
+    distReadoutHTML() +
+    '<div class="timer" id="timerWrap"><div id="timerFill"></div></div>' +
+    '<div class="timer-num" id="timerNum">20s</div>' +
+    '<form id="ansForm" autocomplete="off">' +
+    '<input type="text" id="ans" maxlength="80" placeholder="Type your answer..." aria-label="Your answer">' +
+    '<button class="btn" type="submit">Send it</button>' +
+    "</form>" +
+    "</div>";
+  $("ansForm").onsubmit = function(e){ e.preventDefault(); submitAnswer(false); };
+  var inp = $("ans");
+  if (inp) inp.focus();
+  startTimer();
+}
+
+function startTimer(){
+  stopTimer();
+  S.deadline = performance.now() + ROUND_MS;
+  S.lastTickSec = -1; S.submitted = false;
+  S.timerId = setInterval(tickTimer, 100);
+  tickTimer();
+}
+function stopTimer(){
+  if (S.timerId){ clearInterval(S.timerId); S.timerId = null; }
+}
+function tickTimer(){
+  var remain = Math.max(0, S.deadline - performance.now());
+  var sec = Math.ceil(remain / 1000);
+  var fill = $("timerFill"), wrap = $("timerWrap"), num = $("timerNum");
+  if (fill) fill.style.width = (remain / ROUND_MS * 100) + "%";
+  if (wrap) wrap.classList.toggle("low", remain <= 5000);
+  if (num){ num.textContent = sec + "s"; num.classList.toggle("low", remain <= 5000); }
+  if (sec !== S.lastTickSec){
+    S.lastTickSec = sec;
+    if (sec <= 5 && sec > 0) sndTick();
+  }
+  if (remain <= 0) submitAnswer(true);
+}
+
+function submitAnswer(timeout){
+  if (S.submitted) return;
+  S.submitted = true;
+  stopTimer();
+  var raw = timeout ? "" : ($("ans") ? $("ans").value : "");
+  var cat = S.cats[S.round];
+  var res = checkAnswer(raw, cat);
+  if (res.ok) sndChime(); else sndThud();
+  S.points += res.pts;
+  S.targetDist = S.points * 10;
+  S.breakdown.push({
+    prompt: cat.prompt,
+    answer: raw ? raw.trim() : "",
+    pts: res.pts, tier: res.tier, ok: res.ok, fuzzy: res.fuzzy
+  });
+  showReveal(res, raw);
+}
+
+function showReveal(res, raw){
+  var shown = raw && raw.trim() ? esc(raw.trim()) : "No answer";
+  var verdict = res.ok
+    ? '<div class="verdict good">ACCEPTED</div>'
+    : '<div class="verdict bad">STALLED OUT</div>';
+  var spell = "";
+  if (res.fuzzy){
+    spell = '<div class="spell-note">Spell-checked: read &ldquo;' + esc(res.fuzzy.read) +
+      '&rdquo; as &ldquo;' + esc(res.fuzzy.as) + '&rdquo;.</div>';
+  }
+  var btnLabel = (S.round < 6) ? "Keep riding" : "Finish";
+  $("app").innerHTML =
+    '<div class="panel">' +
+    '<div class="checkpoint-label">CHECKPOINT ' + (S.round + 1) + ' OF 7 COMPLETE</div>' +
+    segsHTML(S.round + 1, -1) +
+    verdict +
+    '<div class="reveal-answer">&ldquo;' + shown + '&rdquo;</div>' +
+    spell +
+    '<div class="tier-line">' + esc(res.tier) + "</div>" +
+    '<div class="pts-line">+' + res.pts + " PTS</div>" +
+    distReadoutHTML() +
+    '<button class="btn" type="button" id="nextBtn">' + btnLabel + "</button>" +
+    "</div>";
+  $("nextBtn").onclick = nextStep;
+  var nb = $("nextBtn"); if (nb) nb.focus();
+}
+
+function nextStep(){
+  audioCtx();
+  sndRev();
+  S.burst = 1;
+  if (S.round < 6){ S.round++; showRound(); }
+  else { showResults(); }
+}
+
+function showResults(){
+  stopTimer();
+  var dist = S.targetDist;
+  var zone = zoneFor(dist), rank = rankFor(S.points);
+  if (S.mode === "daily") S.best.daily = Math.max(S.best.daily, S.points);
+  else S.best.unlimited = Math.max(S.best.unlimited, S.points);
+  var rows = "";
+  for (var i = 0; i < S.breakdown.length; i++){
+    var b = S.breakdown[i];
+    var a = b.answer ? esc(b.answer) : "<i>no answer</i>";
+    rows += '<div class="brow"><span>' + (i+1) + ". " + esc(b.prompt) + " — " + a +
+      "</span><span class='pts'>+" + b.pts + "</span></div>";
+  }
+  $("app").innerHTML =
+    '<div class="panel">' +
+    '<h2 class="screen-title">RIDE COMPLETE</h2>' +
+    '<div class="total-big">' + S.points + '<span style="font-size:22px">/700</span></div>' +
+    '<div class="total-sub">' + fmt(dist) + ' m of trail — ' + esc(zone.name) + "</div>" +
+    '<div class="rank-big">' + esc(rank) + "</div>" +
+    '<div class="breakdown">' + rows + "</div>" +
+    '<div class="bests">Session bests — Daily: <b>' + S.best.daily + '</b> pts &nbsp; Unlimited: <b>' + S.best.unlimited + '</b> pts</div>' +
+    '<div class="btn-row">' +
+    '<button class="btn" type="button" id="shareBtn">Share</button>' +
+    '<button class="btn secondary" type="button" id="againBtn">Play again</button>' +
+    "</div>" +
+    "</div>";
+  $("shareBtn").onclick = shareScore;
+  $("againBtn").onclick = showHome;
+}
+
+function shareScore(){
+  var btn = $("shareBtn");
+  var modeLabel = (S.mode === "daily") ? "Daily Ride" : "Unlimited Ride";
+  var text = "I rode " + fmt(S.targetDist) + " m in ROOST (" + modeLabel + ", " + S.points + " pts). Can you go farther?";
+  function done(){ if (btn){ btn.textContent = "Copied!"; setTimeout(function(){ btn.textContent = "Share"; }, 1800); } }
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done, function(){ fallbackCopy(text); done(); });
+  } else { fallbackCopy(text); done(); }
+}
+function fallbackCopy(text){
+  var ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.position = "fixed"; ta.style.opacity = "0";
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand("copy"); } catch (e) {}
+  document.body.removeChild(ta);
+}
+</script>
+<script>
+"use strict";
+/* ================= Pixel-art background + gauge ================= */
+(function(){
+  var cv = $("bg");
+  var W = 192, H = 108, HOR = 66;
+  var buf = document.createElement("canvas");
+  buf.width = W; buf.height = H;
+  var g = buf.getContext("2d");
+  var ctx = cv.getContext("2d");
+  ctx.imageSmoothingEnabled = false;
+  var dust = [];
+  var fr = 0, lastT = 0;
+
+  function resize(){
+    cv.width = Math.max(2, window.innerWidth);
+    cv.height = Math.max(2, window.innerHeight);
+  }
+  window.addEventListener("resize", resize);
+  resize();
+
+  function rect(x, y, w, h, c){ g.fillStyle = c; g.fillRect(x | 0, y | 0, w, h); }
+
+  function buildGauge(){
+    var prev = 0, html = "";
+    for (var i = 0; i < ZONES.length; i++){
+      var z = ZONES[i];
+      html += '<div class="band" style="bottom:' + (prev/7000*100) + '%;height:' +
+        ((z.max-prev)/7000*100) + '%;background:' + z.color + ';opacity:.85"></div>';
+      prev = z.max;
+    }
+    for (var m = 0; m < MARKERS.length; m++){
+      var mk = MARKERS[m];
+      html += '<div class="tick" style="bottom:' + (mk.m/7000*100) + '%"><span>' +
+        mk.m + ' m — ' + esc(mk.name) + "</span></div>";
+    }
+    html += '<div class="rider-dot" id="riderDot" style="bottom:0%"></div>';
+    $("gauge").innerHTML = html;
+  }
+
+  function wheel(ax, ry, ph){
+    var tire = "#14100c", hub = "#c9bfa8";
+    rect(ax, ry-5, 5, 5, tire);
+    rect(ax+2, ry-3, 1, 1, hub);
+    if (ph === 0){ rect(ax+2, ry-5, 1, 1, hub); rect(ax+2, ry-1, 1, 1, hub); }
+    else if (ph === 1){ rect(ax, ry-3, 1, 1, hub); rect(ax+4, ry-3, 1, 1, hub); }
+    else if (ph === 2){ rect(ax+1, ry-4, 1, 1, hub); rect(ax+3, ry-2, 1, 1, hub); }
+    else { rect(ax+3, ry-4, 1, 1, hub); rect(ax+1, ry-2, 1, 1, hub); }
+  }
+
+  function drawRider(rx, ry){
+    var dark = "#1c1410", fc = "#e8641c";
+    var jersey = "#2e8fd8", pants = "#23232e", helmet = "#f2ede2";
+    var ph = (fr >> 2) % 4;
+    wheel(rx, ry, ph);
+    wheel(rx+12, ry, (ph+2) % 4);
+    rect(rx-1, ry-8, 3, 1, fc);          /* rear fender */
+    rect(rx+3, ry-8, 8, 2, fc);          /* frame */
+    rect(rx+4, ry-10, 6, 2, fc);         /* tank/seat */
+    rect(rx+12, ry-10, 2, 6, dark);      /* fork */
+    rect(rx+12, ry-11, 4, 1, dark);      /* handlebar */
+    rect(rx+2, ry-6, 6, 1, "#8a8a8a");   /* exhaust */
+    rect(rx+6, ry-12, 2, 2, "#ffffff");  /* number plate */
+    rect(rx+5, ry-10, 2, 4, pants);      /* legs */
+    rect(rx+8, ry-10, 2, 4, pants);
+    rect(rx+5, ry-15, 5, 6, jersey);     /* torso */
+    rect(rx+9, ry-14, 4, 2, jersey);     /* arm */
+    rect(rx+6, ry-19, 4, 4, helmet);     /* helmet */
+    rect(rx+9, ry-18, 1, 2, "#223");     /* visor */
+  }
+
+  function draw(dt){
+    fr++;
+    var gap = S.targetDist - S.dispDist;
+    if (Math.abs(gap) < 0.5) S.dispDist = S.targetDist;
+    else S.dispDist += gap * Math.min(1, dt * 3.4);
+    S.burst = Math.max(0, S.burst - dt / 1.5);
+
+    var skyT = Math.min(1, S.dispDist / 7000);
+    var scroll = S.dispDist * 0.085;
+    var x, y, i;
+
+    /* sky */
+    var top = lerpC([255,146,66], [36,16,62], skyT);
+    var bot = lerpC([255,208,132], [150,74,118], skyT);
+    for (y = 0; y < HOR; y++){
+      g.fillStyle = css(lerpC(top, bot, y / HOR));
+      g.fillRect(0, y, W, 1);
+    }
+    /* stars at dusk */
+    if (skyT > 0.45){
+      g.fillStyle = "#ffffff";
+      for (i = 0; i < 46; i++){
+        if (hashN(i * 7.31) < (skyT - 0.45) * 1.8){
+          g.fillRect((hashN(i * 1.17) * W) | 0, (hashN(i * 3.71) * HOR * 0.72) | 0, 1, 1);
+        }
+      }
+    }
+    /* pixel sun */
+    var sunC = css(lerpC([255,224,130], [205,62,58], skyT));
+    rect(W * 0.64, HOR - 32, 26, 26, sunC);
+    rect(W * 0.64 + 4, HOR - 36, 18, 4, sunC);
+
+    /* far mountains */
+    var mc = css(lerpC([122,72,82], [30,16,44], skyT));
+    for (x = 0; x < W; x += 6){
+      var mi = Math.floor((x + scroll * 0.12) / 6);
+      var mh = hashN(mi * 1.71) * 30 + 4;
+      rect(x, HOR - mh, 6, mh, mc);
+    }
+    /* dunes */
+    var dc = css(lerpC([198,128,74], [54,30,60], skyT));
+    for (x = 0; x < W; x += 8){
+      var di2 = Math.floor((x + scroll * 0.35) / 8);
+      var dh = hashN(di2 * 2.33 + 5) * 12 + 2;
+      rect(x, HOR - dh, 8, dh, dc);
+    }
+    /* ground + track */
+    rect(0, HOR, W, H - HOR, css(lerpC([198,142,86], [62,38,64], skyT)));
+    rect(0, HOR + 16, W, H - HOR - 16, css(lerpC([152,102,62], [46,28,48], skyT)));
+    var ec = css(lerpC([230,180,120], [110,70,90], skyT));
+    rect(0, HOR + 16, W, 1, ec);
+    rect(0, HOR + 34, W, 1, ec);
+    /* scrolling track dashes */
+    var dashC = css(lerpC([235,200,140], [120,80,95], skyT));
+    var P = 20 * 26;
+    for (var k = 0; k < 20; k++){
+      var rel = (k * 26 - scroll) % P;
+      if (rel < 0) rel += P;
+      var sx = rel - 26;
+      if (sx > -12 && sx < W + 12) rect(sx, HOR + 25, 8, 1, dashC);
+    }
+    /* cacti + rocks */
+    for (var c = -1; c <= W / 46 + 1; c++){
+      var ci = Math.floor(scroll / 46) + c;
+      var csx = Math.round(ci * 46 + hashN(ci * 3.37) * 26 - scroll);
+      if (csx < -10 || csx > W + 10) continue;
+      var gy = HOR + 6 + Math.round(hashN(ci * 9.17) * 16);
+      if (hashN(ci * 5.71) < 0.55){
+        var cc = css(lerpC([44,108,58], [26,56,48], skyT));
+        var ch = 8 + Math.round(hashN(ci * 7.7) * 6);
+        rect(csx, gy - ch, 3, ch, cc);
+        rect(csx - 3, gy - ch + 3, 2, 4, cc);
+        rect(csx - 3, gy - ch + 3, 3, 2, cc);
+        rect(csx + 3, gy - ch + 5, 2, 4, cc);
+        rect(csx + 2, gy - ch + 5, 3, 2, cc);
+      } else {
+        var rc = css(lerpC([120,110,104], [60,52,60], skyT));
+        rect(csx, gy - 3, 6, 3, rc);
+        rect(csx + 1, gy - 5, 3, 2, rc);
+      }
+    }
+
+    /* rider */
+    var rx = Math.round(W * 0.30);
+    var rgy = HOR + 30;
+    var bob = S.burst > 0.03 ? Math.abs(Math.sin(fr * 0.5)) * 3 : Math.abs(Math.sin(fr * 0.1)) * 1;
+    var ry = rgy - Math.round(bob);
+
+    if (S.burst > 0.12 && dust.length < 60){
+      for (var s = 0; s < 2; s++){
+        dust.push({x: rx - 3, y: ry - 4, vx: -1 - Math.random() * 1.5, vy: -Math.random() * 1.2, life: 1, sz: 2 + Math.random() * 2});
+      }
+    }
+    for (var di = dust.length - 1; di >= 0; di--){
+      var p = dust[di];
+      p.x += p.vx; p.y += p.vy; p.life -= dt * 1.4;
+      if (p.life <= 0){ dust.splice(di, 1); continue; }
+      g.globalAlpha = Math.max(0, p.life) * 0.7;
+      g.fillStyle = css(lerpC([222,190,150], [160,120,120], skyT));
+      var ps = Math.round(p.sz + (1 - p.life) * 3);
+      g.fillRect(p.x | 0, p.y | 0, ps, ps);
+    }
+    g.globalAlpha = 1;
+    drawRider(rx, ry);
+
+    /* speed lines during ride burst */
+    if (S.burst > 0.5){
+      g.globalAlpha = 0.22;
+      g.fillStyle = "#ffffff";
+      for (var li = 0; li < 7; li++){
+        var ly = (hashN(li * 13.7) * H + fr * 4) % H;
+        g.fillRect(0, ly | 0, 24 + hashN(li * 3.3) * 36, 1);
+      }
+      g.globalAlpha = 1;
+    }
+
+    ctx.drawImage(buf, 0, 0, cv.width, cv.height);
+
+    /* HUD sync */
+    var dot = $("riderDot");
+    if (dot) dot.style.bottom = (S.dispDist / 7000 * 100) + "%";
+    var dr = $("distReadout");
+    if (dr) dr.textContent = fmt(Math.round(S.dispDist)) + " m — " + zoneFor(S.dispDist).name;
+  }
+
+  function loop(t){
+    var dt = Math.min(0.05, (t - lastT) / 1000 || 0.016);
+    lastT = t;
+    draw(dt);
+    requestAnimationFrame(loop);
+  }
+
+  buildGauge();
+  $("muteBtn").onclick = function(){
+    S.muted = !S.muted;
+    this.textContent = S.muted ? "SOUND: OFF" : "SOUND: ON";
+    if (!S.muted) audioCtx();
+  };
+  showHome();
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
